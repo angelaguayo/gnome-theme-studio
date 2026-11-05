@@ -1,0 +1,369 @@
+/* ===================================================================
+ * GNOME Theme Studio - Custom Styles & Live Mockup Engine
+ * =================================================================== */
+
+:root {
+  color-scheme: dark;
+}
+
+/* Custom discreet scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Custom color picker wrapper */
+.color-picker-wrapper {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.color-picker-wrapper input[type="color"] {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 58px;
+  height: 58px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Range sliders */
+input[type="range"] {
+  accent-color: #a7c080;
+}
+
+/* ===================================================================
+ * LIVE MOCKUP ENGINE (Variables & CSS Emulation)
+ * =================================================================== */
+
+#mockup-viewport {
+  --accent-color: #a7c080;
+  --accent-secondary: #83c092;
+  --window-bg: #2d353b;
+  --sidebar-bg: #272e33;
+  --surface-elevated: #343f44;
+  --headerbar-bg: #232a2e;
+  --text-primary: #d3c6aa;
+  --text-muted: #859289;
+  --border-color: #3d484d;
+  --border-active: #475258;
+  --destructive-color: #e67e80;
+  --warning-color: #dbbc7f;
+  --info-color: #7fbbb3;
+  --purple-color: #d699b6;
+  --orange-color: #e69875;
+
+  --window-radius: 12px;
+  --button-radius: 8px;
+  --border-width: 1px;
+  --panel-opacity: 1.0;
+  --popup-radius: 20px;
+  --quick-settings-radius: 36px;
+  --window-controls-size: 14px;
+}
+
+/* Mockup Desktop Wallpaper Container */
+.mockup-desktop-wallpaper {
+  background-size: cover;
+  background-position: center;
+  transition: background-image 200ms ease;
+}
+
+/* Window Controls (Close, Min, Max) */
+.mockup-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mockup-ctrl-btn {
+  width: var(--window-controls-size);
+  height: var(--window-controls-size);
+  border-radius: 9999px;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+/* macOS style */
+.mockup-ctrl-style-macos .mockup-ctrl-close {
+  background-color: #ff5f56;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+}
+.mockup-ctrl-style-macos .mockup-ctrl-min {
+  background-color: #ffbd2e;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+}
+.mockup-ctrl-style-macos .mockup-ctrl-max {
+  background-color: #27c93f;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+}
+
+/* Traffic Hover style */
+.mockup-ctrl-style-traffic-hover .mockup-ctrl-btn {
+  background-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+}
+.mockup-ctrl-style-traffic-hover:hover .mockup-ctrl-close {
+  background-color: #ff5f56;
+}
+.mockup-ctrl-style-traffic-hover:hover .mockup-ctrl-min {
+  background-color: #ffbd2e;
+}
+.mockup-ctrl-style-traffic-hover:hover .mockup-ctrl-max {
+  background-color: #27c93f;
+}
+
+/* Accent style */
+.mockup-ctrl-style-accent .mockup-ctrl-btn {
+  background-color: var(--accent-color);
+}
+.mockup-ctrl-style-accent .mockup-ctrl-close:hover {
+  background-color: var(--destructive-color);
+}
+
+/* Monochrome style */
+.mockup-ctrl-style-monochrome .mockup-ctrl-btn {
+  background-color: color-mix(in srgb, var(--text-primary) 15%, transparent);
+}
+.mockup-ctrl-style-monochrome .mockup-ctrl-close:hover {
+  background-color: var(--destructive-color);
+}
+
+/* Shell Top Bar */
+.mockup-shell-panel {
+  background-color: color-mix(in srgb, var(--headerbar-bg) calc(var(--panel-opacity) * 100%), transparent);
+  color: var(--text-primary);
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  transition: background-color 80ms ease;
+  backdrop-filter: blur(12px);
+}
+
+.mockup-panel-btn {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  transition: all 120ms ease;
+  cursor: pointer;
+}
+.mockup-panel-btn:hover {
+  background-color: color-mix(in srgb, var(--text-primary) 15%, transparent);
+}
+.mockup-panel-btn:active {
+  background-color: color-mix(in srgb, var(--text-primary) 25%, transparent);
+}
+
+/* GTK4 Window */
+.mockup-gtk-window {
+  background-color: var(--window-bg);
+  color: var(--text-primary);
+  border-radius: var(--window-radius);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: border-radius 100ms ease, border-width 100ms ease;
+}
+
+/* Headerbar */
+.mockup-headerbar {
+  background-color: var(--headerbar-bg);
+  border-bottom: var(--border-width) solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 14px;
+}
+
+/* Sidebar */
+.mockup-sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: var(--border-width) solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.mockup-sidebar-item {
+  border-radius: var(--button-radius);
+  color: var(--text-primary);
+  transition: all 100ms ease;
+}
+.mockup-sidebar-item:hover {
+  background-color: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+.mockup-sidebar-item.active {
+  background-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* Cards & Surfaces */
+.mockup-card {
+  background-color: var(--surface-elevated);
+  border-radius: var(--button-radius);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Buttons */
+.mockup-btn {
+  border-radius: var(--button-radius);
+  border-width: var(--border-width);
+  border-style: solid;
+  border-color: var(--border-color);
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  transition: all 100ms ease;
+  cursor: pointer;
+}
+.mockup-btn:hover {
+  background-color: color-mix(in srgb, var(--surface-elevated) 85%, white);
+  border-color: var(--border-active);
+}
+.mockup-btn:active {
+  background-color: color-mix(in srgb, var(--surface-elevated) 75%, black);
+}
+
+.mockup-btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #1a201c;
+  font-weight: 600;
+}
+.mockup-btn-primary:hover {
+  background-color: color-mix(in srgb, var(--accent-color) 88%, white);
+  border-color: color-mix(in srgb, var(--accent-color) 88%, white);
+}
+.mockup-btn-primary:active {
+  background-color: color-mix(in srgb, var(--accent-color) 85%, black);
+}
+
+.mockup-btn-destructive {
+  background-color: var(--destructive-color);
+  border-color: var(--destructive-color);
+  color: #1a201c;
+  font-weight: 600;
+}
+.mockup-btn-destructive:hover {
+  background-color: color-mix(in srgb, var(--destructive-color) 88%, white);
+}
+
+.mockup-btn-flat {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.mockup-btn-flat:hover {
+  background-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+/* Inputs */
+.mockup-input {
+  background-color: var(--sidebar-bg);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--button-radius);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  transition: all 120ms ease;
+}
+.mockup-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-secondary) 50%, transparent);
+}
+
+/* Switch Toggle */
+.mockup-switch {
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  background-color: var(--border-color);
+  position: relative;
+  transition: background-color 150ms ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mockup-switch.active {
+  background-color: var(--accent-color);
+}
+.mockup-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: white;
+  transition: transform 150ms ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.mockup-switch.active::after {
+  transform: translateX(20px);
+}
+
+/* Quick Settings Shell Menu */
+.mockup-quick-settings {
+  background-color: var(--surface-elevated);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--quick-settings-radius);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.45);
+  color: var(--text-primary);
+}
+
+.mockup-quick-toggle {
+  background-color: color-mix(in srgb, var(--surface-elevated) 80%, black);
+  border-radius: 9999px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 120ms ease;
+  cursor: pointer;
+}
+.mockup-quick-toggle:hover {
+  background-color: color-mix(in srgb, var(--surface-elevated) 90%, white);
+}
+.mockup-quick-toggle.active {
+  background-color: var(--accent-color);
+  color: #1a201c;
+  font-weight: 600;
+}
+
+/* Toast animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slideInUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

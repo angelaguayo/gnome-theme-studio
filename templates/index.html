@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GNOME Theme Studio — Visual Editor, SASS Compiler, Wallpaper & 1-Click Installer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#a7c080',
+            brandDark: '#1e2428',
+            surface: '#232a2e',
+            surfaceElevated: '#2d353b',
+            borderSubtle: '#3d484d',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#14171a] text-[#d3c6aa] font-sans antialiased min-h-screen flex flex-col selection:bg-[#a7c080] selection:text-[#181c1f]">
+
+  <!-- Top Action Bar -->
+  <header class="h-16 border-b border-[#2d353b] bg-[#1a1f23]/90 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between shadow-sm">
+    <!-- Branding -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#a7c080] to-[#83c092] flex items-center justify-center text-[#181c1f] shadow-md shadow-[#a7c080]/20">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base font-bold text-white tracking-tight">GNOME Theme Studio</h1>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#2d353b] text-[#a7c080] border border-[#3d484d]">GNOME 51 / Libadwaita</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-[#859289]">
+          <span>Tema activo: <strong id="current-system-theme" class="text-[#d3c6aa]">Cargando...</strong></span>
+          <span id="reload-pulse" class="hidden w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Preset Selector -->
+    <div class="flex items-center gap-2">
+      <label class="text-xs text-[#859289] font-medium hidden sm:inline">Preset:</label>
+      <div class="relative">
+        <select id="preset-selector" class="bg-[#242b30] border border-[#3d484d] hover:border-[#56635f] text-sm text-[#d3c6aa] rounded-lg px-3 py-1.5 pr-8 focus:outline-none focus:ring-1 focus:ring-[#a7c080] transition-colors cursor-pointer appearance-none max-w-[200px] truncate">
+          <option value="" disabled>Cargando presets...</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#859289]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+      </div>
+      <button id="btn-save-preset-modal" class="px-2.5 py-1.5 text-xs font-medium text-[#d3c6aa] hover:text-white bg-[#2b3338] hover:bg-[#343f44] border border-[#3d484d] rounded-lg transition-all flex items-center gap-1.5" title="Guardar configuración actual como preset">
+        <svg class="w-3.5 h-3.5 text-[#a7c080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+        <span>Guardar</span>
+      </button>
+    </div>
+
+    <!-- Right Actions -->
+    <div class="flex items-center gap-3">
+      <!-- Toggle Wallpaper -->
+      <label class="hidden lg:flex items-center gap-1.5 text-xs text-[#859289] cursor-pointer hover:text-[#d3c6aa] transition-colors" title="Genera un fondo de pantalla SVG 4K que coincide con los colores del tema y lo aplica a GNOME">
+        <input type="checkbox" id="toggle-apply-wallpaper" checked class="w-4 h-4 rounded text-[#a7c080] focus:ring-0 bg-[#272e33] border-[#3d484d]">
+        <span>Fondo a juego</span>
+      </label>
+
+      <!-- Toggle GTK4 -->
+      <label class="hidden md:flex items-center gap-1.5 text-xs text-[#859289] cursor-pointer hover:text-[#d3c6aa] transition-colors" title="Aplica también el CSS en ~/.config/gtk-4.0/ para tematizar Nautilus, Ajustes, etc.">
+        <input type="checkbox" id="toggle-apply-gtk4" checked class="w-4 h-4 rounded text-[#a7c080] focus:ring-0 bg-[#272e33] border-[#3d484d]">
+        <span>GTK4/Libadwaita</span>
+      </label>
+
+      <!-- Toggle Firefox -->
+      <label class="hidden md:flex items-center gap-1.5 text-xs text-[#859289] cursor-pointer hover:text-[#d3c6aa] transition-colors" title="Aplica el tema a Mozilla Firefox en tus perfiles activos mediante userChrome.css">
+        <input type="checkbox" id="toggle-apply-firefox" checked class="w-4 h-4 rounded text-[#a7c080] focus:ring-0 bg-[#272e33] border-[#3d484d]">
+        <span>Firefox</span>
+      </label>
+
+      <!-- View Logs -->
+      <button id="btn-toggle-logs" class="p-2 text-[#859289] hover:text-white hover:bg-[#2b3338] border border-transparent hover:border-[#3d484d] rounded-lg transition-all" title="Ver consola de compilación">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+      </button>
+
+      <!-- Reset Defaults -->
+      <button id="btn-reset-defaults-open" class="px-3 py-1.5 text-xs font-semibold text-[#e67e80] hover:text-white bg-[#283035] hover:bg-[#3d2427] border border-[#4d383b] hover:border-[#e67e80]/50 rounded-lg transition-all flex items-center gap-1.5 shadow-sm" title="Restablecer el escritorio GNOME a la apariencia de fábrica (Adwaita, sin modificaciones)">
+        <svg class="w-4 h-4 text-[#e67e80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span class="hidden sm:inline">Reset Defaults</span>
+      </button>
+
+      <!-- Export ZIP -->
+      <button id="btn-export-zip" class="px-3 py-1.5 text-xs font-semibold text-[#d3c6aa] hover:text-white bg-[#283035] hover:bg-[#323c42] border border-[#3d484d] rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+        <svg class="w-4 h-4 text-[#7fbbb3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        <span>Descargar (.zip)</span>
+      </button>
+
+      <!-- Primary Action: 1-Click Compile & Apply -->
+      <button id="btn-apply-theme" class="px-4 py-2 text-xs font-bold text-[#1a201c] bg-[#a7c080] hover:bg-[#b8d490] active:scale-[0.98] rounded-lg shadow-md shadow-[#a7c080]/20 transition-all flex items-center gap-2">
+        <svg id="btn-apply-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <svg id="btn-apply-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        <span id="btn-apply-text">Compilar, Instalar y Aplicar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Studio Workspace (Two Columns) -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- LEFT COLUMN: Variables Control Panel -->
+    <aside class="w-[430px] border-r border-[#2d353b] bg-[#181d21] flex flex-col shrink-0 overflow-y-auto">
+      
+      <!-- Theme Name Input -->
+      <div class="p-4 border-b border-[#2d353b] bg-[#1d2226]">
+        <label class="block text-[11px] font-semibold text-[#859289] uppercase tracking-wider mb-1.5">Nombre del Tema</label>
+        <div class="relative">
+          <input type="text" id="input-theme-name" value="Everforest-Dark" class="w-full bg-[#14171a] border border-[#3d484d] focus:border-[#a7c080] text-[#d3c6aa] font-medium text-sm rounded-lg px-3 py-2 outline-none transition-all">
+          <span class="absolute right-3 top-2.5 text-xs text-[#859289]">~/.themes/</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (4 Tabs) -->
+      <div class="grid grid-cols-4 border-b border-[#2d353b] bg-[#1a1f23]">
+        <button data-tab="tab-colors" class="tab-btn py-3 text-xs font-semibold border-b-2 border-[#a7c080] text-[#a7c080] transition-colors flex items-center justify-center gap-1">
+          <span>Colores</span>
+        </button>
+        <button data-tab="tab-shell" class="tab-btn py-3 text-xs font-semibold border-b-2 border-transparent text-[#859289] hover:text-[#d3c6aa] transition-colors flex items-center justify-center gap-1">
+          <span>Shell</span>
+        </button>
+        <button data-tab="tab-metrics" class="tab-btn py-3 text-xs font-semibold border-b-2 border-transparent text-[#859289] hover:text-[#d3c6aa] transition-colors flex items-center justify-center gap-1">
+          <span>Ventanas</span>
+        </button>
+        <button data-tab="tab-wallpaper" class="tab-btn py-3 text-xs font-semibold border-b-2 border-transparent text-[#859289] hover:text-[#d3c6aa] transition-colors flex items-center justify-center gap-1">
+          <span>Fondo</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="p-4 space-y-4 flex-1">
+
+        <!-- TAB 1: Colores Principales -->
+        <div id="tab-colors" class="tab-pane space-y-3">
+          <p class="text-xs text-[#859289]">Paleta que define la identidad de ventanas, barras y elementos GTK3/4.</p>
+
+          <!-- Accent Primary -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Acento Principal</div>
+              <div class="text-[11px] text-[#859289]">Switches, selección y botones sugeridos</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="accent_color" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="accent_color"></div>
+            </div>
+          </div>
+
+          <!-- Accent Secondary -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Acento Secundario (Aqua / Teal)</div>
+              <div class="text-[11px] text-[#859289]">Anillos de foco, hover activo y éxito</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="accent_secondary" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="accent_secondary"></div>
+            </div>
+          </div>
+
+          <!-- Window Background -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Fondo de Ventana (Window BG)</div>
+              <div class="text-[11px] text-[#859289]">Superficie base de aplicaciones</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="window_bg" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="window_bg"></div>
+            </div>
+          </div>
+
+          <!-- Sidebar / View Background -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Fondo de Sidebar / Listas</div>
+              <div class="text-[11px] text-[#859289]">Paneles laterales y áreas de lectura</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="sidebar_bg" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="sidebar_bg"></div>
+            </div>
+          </div>
+
+          <!-- Elevated Surface -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Superficie Elevada (Cards/Botones)</div>
+              <div class="text-[11px] text-[#859289]">Tarjetas y menús emergentes</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="surface_elevated" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="surface_elevated"></div>
+            </div>
+          </div>
+
+          <!-- Primary Text -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Texto Principal (Crema / Títulos)</div>
+              <div class="text-[11px] text-[#859289]">Títulos, etiquetas e iconos</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="text_primary" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="text_primary"></div>
+            </div>
+          </div>
+
+          <!-- Muted Text -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Texto Secundario (Muted)</div>
+              <div class="text-[11px] text-[#859289]">Subtítulos, atajos y descripciones</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="text_muted" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="text_muted"></div>
+            </div>
+          </div>
+
+          <!-- Borders -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Color de Bordes</div>
+              <div class="text-[11px] text-[#859289]">Líneas divisorias y marcos</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="border_color" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="border_color"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: GNOME Shell & Estados -->
+        <div id="tab-shell" class="tab-pane hidden space-y-3">
+          <p class="text-xs text-[#859289]">Personalización del panel superior, OSD y estados semánticos del sistema.</p>
+
+          <!-- Headerbar / Top Bar BG -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Barra Superior (Top Bar)</div>
+              <div class="text-[11px] text-[#859289]">Fondo del panel #panel y headerbar</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="headerbar_bg" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="headerbar_bg"></div>
+            </div>
+          </div>
+
+          <!-- Panel Opacity Slider -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-semibold text-white">Opacidad del Panel Superior</span>
+              <span id="badge-panel-opacity" class="font-mono text-[#a7c080] font-bold">100%</span>
+            </div>
+            <input type="range" data-var="panel_opacity" min="0.2" max="1.0" step="0.05" value="1.0" class="w-full h-1.5 bg-[#14171a] rounded-lg cursor-pointer">
+            <div class="flex justify-between text-[10px] text-[#859289]">
+              <span>Translúcido (20%)</span>
+              <span>Sólido (100%)</span>
+            </div>
+          </div>
+
+          <!-- Destructive Color -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Destructivo / Botón Cerrar</div>
+              <div class="text-[11px] text-[#859289]">Hover de cerrar y acciones críticas</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="destructive_color" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="destructive_color"></div>
+            </div>
+          </div>
+
+          <!-- Warning Color -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Color de Advertencia</div>
+              <div class="text-[11px] text-[#859289]">Estrellas de favoritos y avisos</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="warning_color" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="warning_color"></div>
+            </div>
+          </div>
+
+          <!-- Info / Link Color -->
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#20262b] border border-[#2d353b]">
+            <div>
+              <div class="text-xs font-semibold text-white">Enlaces / Información</div>
+              <div class="text-[11px] text-[#859289]">Hipervínculos e indicadores</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" data-var="info_color" class="hex-input w-20 text-xs font-mono uppercase bg-[#14171a] border border-[#3d484d] rounded px-2 py-1 text-center">
+              <div class="color-picker-wrapper"><input type="color" data-var="info_color"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Geometría & Controles de Ventana -->
+        <div id="tab-metrics" class="tab-pane hidden space-y-3">
+          <p class="text-xs text-[#859289]">Personalización de botones de ventana (cerrar, minimizar, maximizar) y curvaturas.</p>
+
+          <!-- Window Controls Style (macOS, traffic-hover, monochrome, accent) -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <label class="block text-xs font-semibold text-white">Estilo de Botones de Ventana</label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button type="button" data-style="macos" class="btn-ctrl-style p-2 rounded-lg border border-[#3d484d] bg-[#1a1f23] hover:border-[#a7c080] flex items-center gap-2 text-left transition-colors">
+                <span class="flex items-center gap-1">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
+                </span>
+                <span class="text-[11px] font-medium text-white">macOS</span>
+              </button>
+              <button type="button" data-style="traffic-hover" class="btn-ctrl-style p-2 rounded-lg border border-[#3d484d] bg-[#1a1f23] hover:border-[#a7c080] flex items-center gap-2 text-left transition-colors">
+                <span class="flex items-center gap-1">
+                  <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
+                </span>
+                <span class="text-[11px] font-medium text-white">Semáforo Hover</span>
+              </button>
+              <button type="button" data-style="accent" class="btn-ctrl-style p-2 rounded-lg border border-[#3d484d] bg-[#1a1f23] hover:border-[#a7c080] flex items-center gap-2 text-left transition-colors">
+                <span class="flex items-center gap-1">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#a7c080]"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#a7c080]"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#a7c080]"></span>
+                </span>
+                <span class="text-[11px] font-medium text-white">Color Acento</span>
+              </button>
+              <button type="button" data-style="monochrome" class="btn-ctrl-style p-2 rounded-lg border border-[#3d484d] bg-[#1a1f23] hover:border-[#a7c080] flex items-center gap-2 text-left transition-colors">
+                <span class="flex items-center gap-1">
+                  <span class="w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                </span>
+                <span class="text-[11px] font-medium text-white">Monocromo</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Window Controls Size -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-semibold text-white">Tamaño de Botones de Ventana</span>
+              <span id="badge-window-controls-size" class="font-mono text-[#a7c080] font-bold">14px</span>
+            </div>
+            <input type="range" data-var="window_controls_size" min="10" max="20" step="1" value="14" class="w-full h-1.5 bg-[#14171a] rounded-lg cursor-pointer">
+            <div class="flex justify-between text-[10px] text-[#859289]">
+              <span>Pequeño (10px)</span>
+              <span>Grande (20px)</span>
+            </div>
+          </div>
+
+          <!-- Window Controls Position (Left vs Right) -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] flex items-center justify-between">
+            <div>
+              <div class="text-xs font-semibold text-white">Posición de Botones</div>
+              <div class="text-[11px] text-[#859289]">Izquierda (macOS) o Derecha (GNOME)</div>
+            </div>
+            <div class="flex items-center gap-1 bg-[#14171a] p-1 rounded-lg border border-[#3d484d]">
+              <button type="button" id="btn-layout-left" class="px-2.5 py-1 text-xs rounded font-medium transition-colors text-[#859289] hover:text-white">Izquierda</button>
+              <button type="button" id="btn-layout-right" class="px-2.5 py-1 text-xs rounded font-medium transition-colors bg-[#2d353b] text-[#a7c080]">Derecha</button>
+            </div>
+          </div>
+
+          <!-- Window Radius -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-semibold text-white">Radio de Ventana (Window Radius)</span>
+              <span id="badge-window-radius" class="font-mono text-[#a7c080] font-bold">12px</span>
+            </div>
+            <input type="range" data-var="window_radius" min="0" max="24" step="1" value="12" class="w-full h-1.5 bg-[#14171a] rounded-lg cursor-pointer">
+          </div>
+
+          <!-- Button Radius -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-semibold text-white">Radio de Botones e Inputs</span>
+              <span id="badge-button-radius" class="font-mono text-[#a7c080] font-bold">8px</span>
+            </div>
+            <input type="range" data-var="button_radius" min="0" max="16" step="1" value="8" class="w-full h-1.5 bg-[#14171a] rounded-lg cursor-pointer">
+          </div>
+
+          <!-- Border Width -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-semibold text-white">Grosor de Bordes (Border Width)</span>
+              <span id="badge-border-width" class="font-mono text-[#a7c080] font-bold">1px</span>
+            </div>
+            <input type="range" data-var="border_width" min="0" max="3" step="1" value="1" class="w-full h-1.5 bg-[#14171a] rounded-lg cursor-pointer">
+          </div>
+        </div>
+
+        <!-- TAB 4: Fondo & Wallpaper -->
+        <div id="tab-wallpaper" class="tab-pane hidden space-y-3">
+          <p class="text-xs text-[#859289]">Generación de fondos de pantalla vectoriales 4K a juego con los colores del tema.</p>
+
+          <!-- Wallpaper Style Selection -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] space-y-2">
+            <label class="block text-xs font-semibold text-white">Estilo de Fondo Vectorial</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#3d484d] hover:border-[#a7c080] bg-[#1a1f23] cursor-pointer transition-colors">
+                <input type="radio" name="wallpaper_style" value="abstract_waves" checked class="text-[#a7c080] accent-[#a7c080]">
+                <div>
+                  <div class="text-xs font-semibold text-white">Ondas Abstractas GNOME</div>
+                  <div class="text-[11px] text-[#859289]">Curvas fluidas inspiradas en los fondos oficiales de GNOME</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#3d484d] hover:border-[#a7c080] bg-[#1a1f23] cursor-pointer transition-colors">
+                <input type="radio" name="wallpaper_style" value="aurora" class="text-[#a7c080] accent-[#a7c080]">
+                <div>
+                  <div class="text-xs font-semibold text-white">Gradiente Aurora</div>
+                  <div class="text-[11px] text-[#859289]">Resplandor radial suave y etéreo con luces de acento</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#3d484d] hover:border-[#a7c080] bg-[#1a1f23] cursor-pointer transition-colors">
+                <input type="radio" name="wallpaper_style" value="geometric" class="text-[#a7c080] accent-[#a7c080]">
+                <div>
+                  <div class="text-xs font-semibold text-white">Malla Geométrica</div>
+                  <div class="text-[11px] text-[#859289]">Polígonos facetados con degradados nítidos y modernos</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Color Scheme (Dark vs Light mode) -->
+          <div class="p-3 rounded-lg bg-[#20262b] border border-[#2d353b] flex items-center justify-between">
+            <div>
+              <div class="text-xs font-semibold text-white">Modo del Sistema (Color Scheme)</div>
+              <div class="text-[11px] text-[#859289]">Ajuste 'prefer-dark' o 'prefer-light' de GNOME</div>
+            </div>
+            <select id="select-color-scheme" class="bg-[#14171a] border border-[#3d484d] text-xs text-[#d3c6aa] rounded-lg px-2.5 py-1.5 outline-none">
+              <option value="dark">Modo Oscuro</option>
+              <option value="light">Modo Claro</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick status footer in sidebar -->
+      <div class="p-4 border-t border-[#2d353b] bg-[#1a1f23] text-xs text-[#859289] flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>sassc 3.6.6 activo</span>
+        </span>
+        <button id="btn-reset-preset" class="text-xs text-[#859289] hover:text-[#a7c080] underline transition-colors">Reiniciar al preset</button>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT COLUMN: Live Mockup Engine (60fps Interactive GNOME Desktop) -->
+    <section class="flex-1 bg-[#101214] overflow-y-auto p-8 flex flex-col items-center justify-start relative">
+      
+      <!-- Studio Header / Resolution helper -->
+      <div class="w-full max-w-4xl flex items-center justify-between mb-4 text-xs text-[#859289]">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+          <span class="font-semibold text-white">Vista Previa Interactiva (Simulación 60fps)</span>
+          <span class="text-[11px]">— Haz clic en los botones, switches y controles</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-toggle-quick-settings" class="px-2.5 py-1 text-xs rounded bg-[#20262b] hover:bg-[#2b3338] border border-[#3d484d] text-[#d3c6aa] flex items-center gap-1 transition-colors">
+            <svg class="w-3.5 h-3.5 text-[#a7c080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            <span>Ver Quick Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DESKTOP VIEWPORT WRAPPER (With dynamic wallpaper) -->
+      <div id="mockup-viewport" class="w-full max-w-4xl relative rounded-2xl overflow-hidden shadow-2xl border border-white/5 mockup-desktop-wallpaper transition-all">
+
+        <!-- 1. GNOME SHELL TOP BAR -->
+        <div class="mockup-shell-panel px-4 flex items-center justify-between select-none">
+          <!-- Activities -->
+          <div class="flex items-center gap-1">
+            <div class="mockup-panel-btn text-white flex items-center gap-1.5 font-bold">
+              <span class="w-2 h-2 rounded-full bg-[var(--accent-color)]"></span>
+              <span>Actividades</span>
+            </div>
+          </div>
+
+          <!-- Center Date & Clock -->
+          <div class="mockup-panel-btn text-white/90">
+            <span>Mar 3 nov 09:30</span>
+          </div>
+
+          <!-- System Status Tray -->
+          <div class="flex items-center gap-2">
+            <div id="tray-quick-trigger" class="mockup-panel-btn flex items-center gap-2.5 py-1 px-2.5 bg-black/20 hover:bg-black/30 border border-white/5">
+              <!-- Network SVG -->
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0012 4zm0 3.1c3.5 0 6.69 1.34 9.1 3.54L12 19.8 2.9 10.64C5.31 8.44 8.5 7.1 12 7.1z"/></svg>
+              <!-- Volume SVG -->
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <!-- Battery SVG -->
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK SETTINGS OVERLAY MENU (GNOME Shell with fixed dropdown chevron colors) -->
+        <div id="mockup-quick-settings-menu" class="hidden absolute top-10 right-4 z-30 w-80 p-4 mockup-quick-settings animate-slide-up backdrop-blur-xl">
+          <div class="grid grid-cols-2 gap-2.5 mb-3">
+            
+            <!-- Wi-Fi Split Toggle with Dropdown Arrow -->
+            <div class="flex items-stretch rounded-full overflow-hidden bg-[var(--accent-color)] text-[#1a201c] font-semibold text-xs shadow-sm">
+              <div class="flex items-center gap-2 py-2 px-3 flex-1 cursor-pointer hover:brightness-105">
+                <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0012 4z"/></svg>
+                <span class="truncate">Wi-Fi</span>
+              </div>
+              <div class="px-2.5 flex items-center justify-center border-l border-black/15 hover:bg-black/10 cursor-pointer" title="Ver redes Wi-Fi">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+
+            <!-- Bluetooth Split Toggle -->
+            <div class="flex items-stretch rounded-full overflow-hidden bg-[var(--accent-color)] text-[#1a201c] font-semibold text-xs shadow-sm">
+              <div class="flex items-center gap-2 py-2 px-3 flex-1 cursor-pointer hover:brightness-105">
+                <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+                <span class="truncate">Bluetooth</span>
+              </div>
+              <div class="px-2.5 flex items-center justify-center border-l border-black/15 hover:bg-black/10 cursor-pointer" title="Ver dispositivos">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+
+            <!-- Dark Mode Toggle -->
+            <div class="mockup-quick-toggle active">
+              <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+              <div class="truncate text-xs font-semibold">Modo Oscuro</div>
+            </div>
+
+            <!-- Night Light Toggle -->
+            <div class="mockup-quick-toggle">
+              <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 17.93V4.07a8 8 0 010 15.86z"/></svg>
+              <div class="truncate text-xs font-semibold">Luz Nocturna</div>
+            </div>
+
+          </div>
+
+          <!-- Sliders in Quick Settings -->
+          <div class="space-y-2 pt-2 border-t border-white/10">
+            <div class="flex items-center gap-2 text-xs">
+              <svg class="w-3.5 h-3.5 shrink-0 opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              <div class="flex-1 h-2 bg-black/30 rounded-full overflow-hidden">
+                <div class="h-full bg-[var(--accent-color)] w-3/4 rounded-full"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <svg class="w-3.5 h-3.5 shrink-0 opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+              <div class="flex-1 h-2 bg-black/30 rounded-full overflow-hidden">
+                <div class="h-full bg-[var(--accent-color)] w-1/2 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. GTK 4 / LIBADWAITA WINDOW CONTAINER -->
+        <div class="p-6">
+          <div class="mockup-gtk-window flex flex-col min-h-[480px]">
+
+            <!-- Window Headerbar (Dynamic Left vs Right Controls) -->
+            <div class="mockup-headerbar flex items-center justify-between select-none">
+              
+              <!-- Left Controls Slot -->
+              <div id="mockup-left-controls" class="flex items-center gap-2">
+                <div class="mockup-window-controls mockup-ctrl-style-traffic-hover">
+                  <span class="mockup-ctrl-btn mockup-ctrl-close" title="Cerrar"></span>
+                  <span class="mockup-ctrl-btn mockup-ctrl-min" title="Minimizar"></span>
+                  <span class="mockup-ctrl-btn mockup-ctrl-max" title="Maximizar"></span>
+                </div>
+              </div>
+
+              <!-- Window Title -->
+              <div class="flex flex-col items-center">
+                <span class="text-xs font-bold text-[var(--text-primary)]">Proyectos — GNOME Theme Studio</span>
+                <span class="text-[10px] text-[var(--text-muted)]">Libadwaita Dynamic Architecture</span>
+              </div>
+
+              <!-- Right Controls Slot -->
+              <div id="mockup-right-controls" class="flex items-center gap-2">
+                <div class="flex items-center bg-black/20 border border-white/5 rounded-[var(--button-radius)] px-2 py-1 text-xs">
+                  <svg class="w-3.5 h-3.5 text-[var(--text-muted)] mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <span class="text-[var(--text-muted)] text-[11px]">Buscar...</span>
+                </div>
+                <button class="mockup-btn px-2.5 py-1 text-xs">Ajustes</button>
+              </div>
+            </div>
+
+            <!-- Window Body (Sidebar + Content) -->
+            <div class="flex-1 flex overflow-hidden">
+
+              <!-- Sidebar -->
+              <div class="mockup-sidebar w-48 p-3 flex flex-col gap-1 select-none">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] px-2.5 py-1">Lugares</div>
+                <div class="mockup-sidebar-item active px-2.5 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                  <span>Inicio</span>
+                </div>
+                <div class="mockup-sidebar-item px-2.5 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                  <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Documentos</span>
+                </div>
+                <div class="mockup-sidebar-item px-2.5 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                  <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span>Descargas</span>
+                </div>
+                <div class="mockup-sidebar-item px-2.5 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                  <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                  <span>Proyectos</span>
+                </div>
+
+                <div class="mt-4 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] px-2.5 py-1">Dispositivos</div>
+                <div class="mockup-sidebar-item px-2.5 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                  <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
+                  <span>Fedora Linux 45</span>
+                </div>
+              </div>
+
+              <!-- Main Content View -->
+              <div class="flex-1 p-5 overflow-y-auto space-y-4">
+
+                <!-- Elevated Card -->
+                <div class="mockup-card p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 class="text-sm font-bold text-[var(--text-primary)]">Personalización en Vivo</h3>
+                      <p class="text-xs text-[var(--text-muted)]">Los cambios en los controles se reflejan de forma instantánea a 60fps.</p>
+                    </div>
+                    <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-[var(--accent-color)] text-[#1a201c]">Activo</span>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="space-y-1">
+                    <div class="flex justify-between text-[11px] text-[var(--text-muted)]">
+                      <span>Compilación SASS & Renderizado</span>
+                      <span class="font-bold text-[var(--text-primary)]">100% Sincronizado</span>
+                    </div>
+                    <div class="h-2 bg-black/25 rounded-full overflow-hidden">
+                      <div class="h-full bg-[var(--accent-color)] w-full rounded-full transition-all duration-300"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interactive Widget Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <!-- Form Controls Card -->
+                  <div class="mockup-card p-4 space-y-3">
+                    <div class="text-xs font-bold text-[var(--text-primary)]">Controles & Toggles</div>
+                    
+                    <!-- Switches -->
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-[var(--text-primary)]">Modo Nocturno Automático</span>
+                      <div class="mockup-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-[var(--text-primary)]">Efectos de Transparencia</span>
+                      <div class="mockup-switch" onclick="this.classList.toggle('active')"></div>
+                    </div>
+
+                    <!-- Checkboxes & Radio -->
+                    <div class="pt-2 border-t border-[var(--border-color)] flex items-center justify-between text-xs">
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded text-[var(--accent-color)] accent-[var(--accent-color)]">
+                        <span>Check Activo</span>
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" checked name="mock-radio" class="w-4 h-4 accent-[var(--accent-color)]">
+                        <span>Opción A</span>
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="mock-radio" class="w-4 h-4 accent-[var(--accent-color)]">
+                        <span>Opción B</span>
+                      </label>
+                    </div>
+
+                    <!-- Text input -->
+                    <div class="pt-1">
+                      <input type="text" value="Texto editable en libadwaita..." class="mockup-input w-full">
+                    </div>
+                  </div>
+
+                  <!-- Buttons & Badges Card -->
+                  <div class="mockup-card p-4 space-y-3">
+                    <div class="text-xs font-bold text-[var(--text-primary)]">Botones & Acciones Semánticas</div>
+                    
+                    <div class="flex flex-wrap gap-2">
+                      <button class="mockup-btn mockup-btn-primary">Sugerido (.suggested)</button>
+                      <button class="mockup-btn">Normal</button>
+                      <button class="mockup-btn mockup-btn-destructive">Destructivo</button>
+                      <button class="mockup-btn mockup-btn-flat">Plano (Flat)</button>
+                    </div>
+
+                    <!-- Semantic chips / badges -->
+                    <div class="pt-2 border-t border-[var(--border-color)]">
+                      <div class="text-[11px] text-[var(--text-muted)] mb-1.5 font-medium">Chips cromáticos:</div>
+                      <div class="flex flex-wrap gap-1.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--accent-color)] text-[#1a201c]">Acento</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--accent-secondary)] text-[#1a201c]">Aqua</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--warning-color)] text-[#1a201c]">Aviso</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--destructive-color)] text-[#1a201c]">Error</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--info-color)] text-[#1a201c]">Info</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--purple-color)] text-[#1a201c]">Lavanda</span>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- SAVE PRESET MODAL -->
+  <div id="modal-save-preset" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#1f2529] border border-[#3d484d] rounded-xl max-w-sm w-full p-5 shadow-2xl space-y-4 animate-slide-up">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#a7c080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+          <span>Guardar Configuración como Preset</span>
+        </h3>
+        <button id="btn-close-save-modal" class="text-[#859289] hover:text-white">&times;</button>
+      </div>
+      <div>
+        <label class="block text-xs text-[#859289] mb-1.5 font-medium">Nombre del Preset:</label>
+        <input type="text" id="input-preset-name" placeholder="Ej. Mi Tema Favorito" class="w-full bg-[#14171a] border border-[#3d484d] focus:border-[#a7c080] text-sm text-[#d3c6aa] rounded-lg px-3 py-2 outline-none">
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="btn-cancel-save-modal" class="px-3 py-1.5 text-xs text-[#859289] hover:text-white rounded-lg">Cancelar</button>
+        <button id="btn-confirm-save-preset" class="px-4 py-1.5 text-xs font-bold text-[#1a201c] bg-[#a7c080] hover:bg-[#b8d490] rounded-lg shadow">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET DEFAULTS CONFIRMATION MODAL -->
+  <div id="modal-reset-defaults" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#1f2529] border border-[#4d383b] rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-slide-up">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#e67e80]/15 border border-[#e67e80]/30 flex items-center justify-center text-[#e67e80] shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-sm font-bold text-white">¿Restablecer GNOME a Valores por Defecto?</h3>
+          <p class="text-xs text-[#859289] mt-1 leading-relaxed">
+            Esta acción restaurará el entorno de escritorio original tal como viene recién instalado en el sistema:
+          </p>
+          <ul class="text-xs text-[#d3c6aa] mt-2.5 space-y-1.5 list-disc list-inside bg-[#161a1d] p-3 rounded-lg border border-[#2d353b]">
+            <li>Tema GTK original predeterminado (<strong>Adwaita</strong>)</li>
+            <li>Esquema de color y acento de fábrica (<strong>Azul GNOME</strong>)</li>
+            <li>Tema nativo de <strong>GNOME Shell</strong> (sin estilos modificados)</li>
+            <li>Fondos de pantalla oficiales del sistema (día y noche)</li>
+            <li>Remoción de overrides de Libadwaita en <code class="text-[#7fbbb3]">~/.config/gtk-4.0/</code></li>
+            <li>Disposición estándar de controles de ventana</li>
+          </ul>
+        </div>
+        <button id="btn-close-reset-modal" class="text-[#859289] hover:text-white">&times;</button>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#2d353b]">
+        <button id="btn-cancel-reset-modal" class="px-3.5 py-1.5 text-xs text-[#859289] hover:text-white rounded-lg">Cancelar</button>
+        <button id="btn-confirm-reset-defaults" class="px-4 py-1.5 text-xs font-bold text-white bg-[#e67e80] hover:bg-[#f08a8c] rounded-lg shadow-md shadow-[#e67e80]/20 flex items-center gap-1.5 transition-all">
+          <svg id="reset-spinner" class="hidden w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          <span id="reset-btn-text">Sí, Restablecer Todo</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPILATION & SYSTEM LOGS DRAWER -->
+  <div id="logs-drawer" class="hidden fixed bottom-0 right-0 z-50 w-full md:w-[600px] h-80 bg-[#161a1d] border-t md:border-l border-[#2d353b] shadow-2xl flex flex-col animate-slide-up">
+    <div class="p-3 border-b border-[#2d353b] bg-[#1d2226] flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2 font-bold text-white">
+        <svg class="w-4 h-4 text-[#a7c080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Consola de Compilación SASS y Despliegue</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-clear-logs" class="text-[#859289] hover:text-white text-[11px]">Limpiar</button>
+        <button id="btn-close-logs" class="text-[#859289] hover:text-white font-bold px-1.5">&times;</button>
+      </div>
+    </div>
+    <div id="logs-content" class="flex-1 p-3 overflow-y-auto font-mono text-[11px] text-[#a7c080] space-y-1 bg-[#101315]">
+      <div class="text-[#859289]">// Esperando acciones de compilación o instalación...</div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Application Logic -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

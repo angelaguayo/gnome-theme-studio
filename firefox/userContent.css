@@ -1,0 +1,40 @@
+/* ===================================================================
+ * GNOME THEME STUDIO - FIREFOX USERCONTENT.CSS
+ * Styles about:home, about:newtab, about:blank & Preferences
+ * =================================================================== */
+@-moz-document url("about:newtab"), url("about:home"), url("about:blank") {
+  body, .activity-stream {
+    background-color: #2d353b !important;
+    color: #d3c6aa !important; }
+  .search-wrapper .search-inner-wrapper {
+    background-color: #343f44 !important;
+    border: 1px solid #3d484d !important;
+    border-radius: 12px !important;
+    color: #d3c6aa !important; }
+  .search-wrapper .search-inner-wrapper:hover,
+  .search-wrapper .search-inner-wrapper:focus-within {
+    border-color: #a7c080 !important;
+    box-shadow: 0 0 0 1.5px #a7c080 !important; }
+  .top-site-button .tile {
+    background-color: #343f44 !important;
+    border: 1px solid #3d484d !important;
+    border-radius: 12px !important;
+    transition: transform 150ms ease, border-color 150ms ease !important; }
+  .top-site-button:hover .tile {
+    border-color: #475258 !important;
+    transform: translateY(-2px); }
+  .top-site-button .title {
+    color: #d3c6aa !important; }
+  .card-outer {
+    background-color: #343f44 !important;
+    border: 1px solid #3d484d !important;
+    border-radius: 12px !important; } }
+
+@-moz-document url-prefix("about:preferences"), url-prefix("about:addons") {
+  :root {
+    --in-content-page-background: #2d353b !important;
+    --in-content-page-color: #d3c6aa !important;
+    --in-content-box-background: #343f44 !important;
+    --in-content-box-border-color: #3d484d !important;
+    --in-content-primary-button-background: #a7c080 !important;
+    --in-content-primary-button-text-color: #1a201c !important; } }
