@@ -303,10 +303,24 @@ entry:focus {
   /* Forest Green */ }
 
 /* Menús y Popovers */
-popover, .popover, menu, .menu {
+popover, .popover {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important; }
+
+popover > contents {
   background-color: @ef_bg0;
   color: @theme_fg_color;
-  border-color: @borders; }
+  border: 1px solid @borders;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px 2px rgba(0, 0, 0, 0.18); }
+
+menu, .menu {
+  background-color: @ef_bg0;
+  color: @theme_fg_color;
+  border-color: @borders;
+  border-radius: 20px; }
 
 /* Listas y Filas */
 list, .list {

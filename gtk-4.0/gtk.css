@@ -249,10 +249,42 @@
 /* ===================================================================
  * SECCIÓN 4: WIDGETS Y CLASES SEMÁNTICAS (GTK 4 / LIBADWAITA)
  * =================================================================== */
-/* Compatibilidad para apps GTK 4 clásicas */
-window, .background {
+/* Compatibilidad para apps GTK 4 clásicas (excluyendo popovers y popups) */
+window:not(popover):not(.popup),
+.background:not(popover):not(.popup):not(contents) {
   background-color: @window_bg_color;
   color: @window_fg_color; }
+
+/* ===================================================================
+ * POPOVERS Y MENÚS FLOTANTES (LIBADWAITA & GTK 4)
+ * ===================================================================
+ * El contenedor exterior (window.popup y popover) debe ser 100% transparente
+ * para que el margen de amortiguación de la sombra no se rellene con color
+ * ni cree recuadros alrededor del menú contextual.
+ * El fondo, radio de curvatura y sombra pertenecen ÚNICAMENTE a `contents`.
+ * =================================================================== */
+window.popup,
+window.popup.background,
+popover,
+popover.background,
+popover.menu,
+.popover {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important; }
+
+popover > contents,
+popover.menu > contents {
+  background-color: @popover_bg_color;
+  color: @popover_fg_color;
+  border-radius: 20px;
+  border: 1px solid @borders;
+  box-shadow: 0 4px 14px 2px rgba(0, 0, 0, 0.16), 0 2px 4px 1px rgba(0, 0, 0, 0.1) !important; }
+
+popover > arrow {
+  background-color: @popover_bg_color;
+  border-color: @borders; }
 
 headerbar, .titlebar {
   background-color: @headerbar_bg_color;
@@ -525,7 +557,7 @@ scrollbar > range > trough > slider:active {
 /* ===================================================================
  * SECCIÓN 5: GEOMETRÍA Y MÉTRICAS DINÁMICAS
  * =================================================================== */
-window.background, window.csd, window.solid-csd, .window-frame, dialog {
+window.background:not(.popup), window.csd:not(.popup), window.solid-csd, .window-frame, dialog {
   border-radius: 12px; }
 
 window.maximized, window.fullscreen,
