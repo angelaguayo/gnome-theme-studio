@@ -197,20 +197,24 @@ Si prefieres la terminal pero quieres poder elegir cualquier preset de la biblio
 ./themer-cli.py
 ```
 
-#### Características del Studio CLI (Pantalla Única):
-* **Panel dual interactivo en 1 sola pantalla**:
-  - **Panel izquierdo (Presets)**: Navega por los 26 presets con las flechas `↑` y `↓`. La previsualización de la derecha se actualiza al instante.
-  - **Panel derecho (Ajustes)**: Cambia a este panel con `Tab` o `→`.
-* **Alternar valores con la barra espaciadora (`Espacio`)**:
-  - **Esquema**: Alterna al instante entre modo `Oscuro (Dark)` y `Claro (Light)`.
-  - **Acento**: Rota con cada pulsación entre la paleta oficial (Azul, Teal, Verde, Amarillo, Naranja, Rojo, etc.) con muestra de color RGB real.
-  - **Botones**: Rota entre `Semáforo macOS (hover)`, `Semáforo fijo`, `Monocromo GNOME` y `Minimalista`.
-  - **Posición**: Alterna entre `Derecha (GNOME)` e `Izquierda (macOS)`.
-  - **Curvatura**: Rota entre `Estándar (12px)`, `Moderno (16px)`, `Muy Redondo (22px)` y `Cuadrado (4px)`.
-  - **Fondo 4K**: Rota entre `Ondas fluidas (Waves)`, `Aurora boreal`, `Geométrico` y `Ninguno`.
-  - **Libadwaita / Firefox**: Activa o desactiva con `Espacio`.
-* **Aplicación inmediata en 1-Tecla**: Pulsa `A` (o `Enter`) en cualquier momento para compilar y aplicar el tema al escritorio con recarga en caliente Wayland.
-* **Acciones rápidas**: `S` (Guardar preset), `E` (Exportar ZIP), `R` (Restablecer GNOME) y `Q` (Salir).
+> 💎 **Potenciado por Rich**: Diseñado con bordes redondeados (`box.ROUNDED`), cuadrícula responsiva, spinners animados de compilación y auto-detección del entorno virtual `venv/`.
+
+#### Características del Studio CLI (Interfaz Unificada en Tarjeta):
+* **Navegación ultra-simple y sin divisiones**:
+  - `↑` / `↓`: Desplaza el cursor selector `➜` a través de todas las opciones.
+  - `←` / `→` o `Espacio` o `Enter`: Cambia o alterna el valor de la opción activa de forma cíclica `[ ◀  Valor  ▶ ]`.
+* **Ajustes interactivos disponibles**:
+  - **Tema Preset**: Cambia entre los 26 presets disponibles con un solo toque.
+  - **Esquema**: Alterna al instante entre modo `Oscuro (Dark)` y `Claro (Light)` vinculando las variantes oficiales del preset.
+  - **Color de Acento**: Rota por la paleta oficial de acentos GNOME (Azul, Teal, Verde, Amarillo, Naranja, Rojo, etc.) con muestra de color RGB real en terminal.
+  - **Botones Ventana**: Rota entre `Semáforo macOS (hover)`, `Semáforo fijo`, `Monocromo GNOME` y `Minimalista`.
+  - **Posición Botones**: Alterna entre `Derecha (GNOME)` e `Izquierda (macOS)`.
+  - **Curvatura Ventana**: Rota entre `Estándar (12px)`, `Moderno (16px)`, `Muy Redondo (22px)` y `Cuadrado (4px)`.
+  - **Fondo 4K Vectorial**: Rota entre `Ondas fluidas (Waves)`, `Aurora boreal`, `Geométrico` y `Ninguno`.
+  - **Libadwaita / Firefox**: Activa o desactiva con un toque.
+* **Aplicación inmediata en 1-Tecla**:
+  - Presiona `Enter` sobre la fila `⚡ APLICAR TEMA`, o pulsa `A` en cualquier momento desde cualquier opción para compilar y aplicar el tema al escritorio con recarga en caliente Wayland.
+* **Atajos de teclado**: `A` (Aplicar), `S` (Guardar preset), `E` (Exportar ZIP), `R` (Restablecer GNOME) y `Q` / `Esc` (Salir).
 
 #### Modo de comandos directos (sin interfaz interactiva):
 ```bash
