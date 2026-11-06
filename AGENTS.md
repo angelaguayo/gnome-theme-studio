@@ -14,9 +14,10 @@ This document is the official technical specification, architecture contract, an
 * **Sandboxed Flatpak apps**
 * **Vector 4K Desktop Wallpapers**
 
-The project provides two usage modes that must always remain in perfect parity:
+The project provides three usage modes that must always remain in perfect parity:
 1. **Visual Studio Mode (Web GUI)**: Real-time interactive mockup, live CSS editing, color pickers, metric sliders, compilation logs, and 1-click live hot-reload (`app.py`, `templates/index.html`, `static/js/app.js`).
-2. **Direct CLI Mode**: Fully automated bash installer and uninstaller (`install.sh`, `uninstall.sh`) that works out-of-the-box in headless or terminal environments.
+2. **Interactive CLI Studio Mode (`themer-cli.py`)**: Zero-dependency single-screen dual-panel terminal interface (*htop / kconfig* style) with preset navigation, live spacebar toggling of scheme, GNOME accents, macOS traffic lights, and 1-key live hot-reload (`A` / `Enter`). Also supports headless automation flags (`--apply`, `--list`, `--export`, `--reset`).
+3. **Direct CLI Mode**: Fully automated bash installer and uninstaller (`install.sh`, `uninstall.sh`) that works out-of-the-box in headless or terminal environments.
 
 ---
 
@@ -27,11 +28,13 @@ The codebase is organized into modular layers:
 ```mermaid
 flowchart TD
     UI["Web Studio UI (index.html + app.js)"] -->|JSON API Requests| APP["Flask Application Server (app.py)"]
+    TUI["CLI Studio (themer-cli.py)"] -->|Direct Python Engine Calls| COMPILER["SCSS Compiler Engine (compiler.py)"]
+    TUI -->|1-Key Live Apply| INSTALLER["Installer & Hot-Reload Engine (installer.py)"]
     CLI["CLI Scripts (install.sh / uninstall.sh)"] -->|Direct File Copy| SYSTEM["User GNOME Desktop"]
     
     APP -->|Load/Save Presets| PRESETS["Preset Manager (presets.py + presets.json)"]
-    APP -->|Compile Theme Request| COMPILER["SCSS Compiler Engine (compiler.py)"]
-    APP -->|1-Click Apply Request| INSTALLER["Installer & Hot-Reload Engine (installer.py)"]
+    APP -->|Compile Theme Request| COMPILER
+    APP -->|1-Click Apply Request| INSTALLER
     APP -->|Export ZIP Request| EXPORTER["Theme Packager (exporter.py)"]
     
     COMPILER -->|Reads Master Templates| BASE["Master Templates (base_theme/)"]
@@ -59,6 +62,7 @@ flowchart TD
 | [`presets.json`](presets.json) | Database of 22 calibrated color palettes. | Everforest, Catppuccin, Nord, Tokyo Night, Dracula, Gruvbox, etc. |
 | [`wallpaper_generator.py`](wallpaper_generator.py) | Generates mathematical 4K vector SVG wallpapers matching palette. | `generate_svg_wallpaper(config, style)`: `abstract_waves`, `aurora`, `geometric`. |
 | [`exporter.py`](exporter.py) | Compiles and packages themes into portable `.zip` archives with embedded installer. | `create_theme_zip(theme_name, compiled_dir)`. |
+| [`themer-cli.py`](themer-cli.py) | Standalone interactive CLI Studio (dual-panel single-screen) & batch script tool. | Single-screen TUI (`run_single_screen_studio`), Spacebar toggles/cycles, TrueColor swatches, CLI flags (`--preset`, `--apply`, `--list`, `--status`, `--reset`, `--export`). |
 | [`base_theme/`](base_theme/) | Immutable master SCSS templates. | Subdirectories: `gnome-shell/`, `gtk-3.0/`, `gtk-4.0/`, `firefox/`, `scss/`. |
 | [`install.sh`](install.sh) | Standalone bash installer for command-line users. | CLI options: `--install`, `--uninstall`, `--status`. |
 | [`uninstall.sh`](uninstall.sh) | Restores factory GNOME desktop defaults. | Resets GTK, Shell, color-scheme, accent-color, cleans Flatpak & Firefox. |
@@ -231,7 +235,13 @@ Restores GNOME Desktop, GTK theme (`Adwaita`), color-scheme, accent-color, wallp
 
 ### How to test Python syntax:
 ```bash
-python3 -m py_compile app.py compiler.py installer.py presets.py exporter.py wallpaper_generator.py
+python3 -m py_compile app.py compiler.py installer.py presets.py exporter.py wallpaper_generator.py themer-cli.py
+```
+
+### How to test CLI Studio and Flags:
+```bash
+./themer-cli.py --list
+./themer-cli.py --status
 ```
 
 ### How to test theme compilation from Python without applying:

@@ -40,11 +40,11 @@ cp "$SCRIPT_DIR/gtk-4.0/gtk.css" "$HOME/.config/gtk-4.0/gtk.css"
 cp "$SCRIPT_DIR/gtk-4.0/gtk-dark.css" "$HOME/.config/gtk-4.0/gtk-dark.css"
 
 # Apply matching wallpaper if included
-if [ -f "$SCRIPT_DIR/${THEME_NAME}-wallpaper.svg" ]; then
+if [ -f "$SCRIPT_DIR/${{THEME_NAME}}-wallpaper.svg" ]; then
     mkdir -p "$HOME/.local/share/backgrounds"
-    cp "$SCRIPT_DIR/${THEME_NAME}-wallpaper.svg" "$HOME/.local/share/backgrounds/"
-    gsettings set org.gnome.desktop.background picture-uri "file://$HOME/.local/share/backgrounds/${THEME_NAME}-wallpaper.svg"
-    gsettings set org.gnome.desktop.background picture-uri-dark "file://$HOME/.local/share/backgrounds/${THEME_NAME}-wallpaper.svg"
+    cp "$SCRIPT_DIR/${{THEME_NAME}}-wallpaper.svg" "$HOME/.local/share/backgrounds/"
+    gsettings set org.gnome.desktop.background picture-uri "file://$HOME/.local/share/backgrounds/${{THEME_NAME}}-wallpaper.svg"
+    gsettings set org.gnome.desktop.background picture-uri-dark "file://$HOME/.local/share/backgrounds/${{THEME_NAME}}-wallpaper.svg"
 fi
 
 # Apply Firefox theme if included

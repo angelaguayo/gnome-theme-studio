@@ -21,7 +21,7 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
 
 ## 📸 Capturas de Pantalla (Showcase)
 
-<!-- Coloca tus capturas en la carpeta screenshots/ con los nombres: desktop.png, studio.png, nautilus.png y firefox.png -->
+<!-- Coloca tus capturas en la carpeta screenshots/ con los nombres: desktop.png, studio.png, cli.png, nautilus.png y firefox.png -->
 
 <p align="center">
   <img src="screenshots/desktop.png" alt="GNOME Theme Studio Desktop Showcase" width="100%">
@@ -29,11 +29,20 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
   <em>Escritorio GNOME completo con tema aplicado, panel superior, aplicaciones Libadwaita y fondo de pantalla vectorial 4K a juego.</em>
 </p>
 
-<p align="center">
-  <img src="screenshots/studio.png" alt="GNOME Theme Studio Web Interface" width="100%">
-  <br>
-  <em>Estudio visual interactivo en tiempo real con selector de presets, paleta de colores y ajuste de métricas.</em>
-</p>
+<table align="center" width="100%">
+  <tr>
+    <td width="50%" align="center">
+      <img src="screenshots/studio.png" alt="GNOME Theme Studio Web Interface" width="100%"><br>
+      <b>Estudio Visual Web (<code>http://localhost:5000</code>)</b><br>
+      <sub>Mockup interactivo en tiempo real con selectores de color, métricas y recarga en caliente.</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="screenshots/cli.png" alt="GNOME Theme Studio CLI Interactive Studio" width="100%"><br>
+      <b>Studio Interactivo CLI (<code>./themer-cli.py</code>)</b><br>
+      <sub>Panel dual en pantalla única: navega presets y altera esquemas, acentos y botones con la barra espaciadora.</sub>
+    </td>
+  </tr>
+</table>
 
 <table align="center" width="100%">
   <tr>
@@ -59,37 +68,44 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
 ### 🎨 1. Estudio Visual en Tiempo Real (Web UI)
 Interfaz web moderna con visualizador interactivo (Mockup) que refleja en vivo cada cambio de color, radio de curvatura y grosor de bordes antes de compilar o aplicar al sistema.
 
-### 📐 2. Arquitectura de Título y Barra Superior de Nautilus (Zero-Desfase)
+### 💻 2. Studio Interactivo en Terminal CLI (themer-cli.py)
+Entorno interactivo TUI en pantalla única (estilo *htop / kconfig*) sin dependencias externas:
+* **Panel dual sincronizado**: Explora la biblioteca de presets en el panel izquierdo mientras ves su configuración y paleta en el panel derecho.
+* **Alternancia instantánea con la barra espaciadora (`Espacio`)**: Modifica esquemas (*Dark / Light*), colores de acento oficiales de GNOME, controles de ventana (*macOS traffic-lights / GNOME*), curvaturas y fondos de pantalla 4K al vuelo sin entrar en submenús.
+* **1-Tecla / 1-Clic (`A` / `Enter`)**: Compila y aplica directamente el tema con recarga en caliente Wayland.
+* **Automatización por flags**: Compatible con ejecución desatendida mediante `--list`, `--preset`, `--apply`, `--export`, `--status` y `--reset`.
+
+### 📐 3. Arquitectura de Título y Barra Superior de Nautilus (Zero-Desfase)
 En Libadwaita moderna (`AdwToolbarView`), muchas implementaciones de temas provocan un desfase o franja de 6 píxeles sobre la barra de título de Nautilus (donde el fondo de la ventana se filtra). GNOME Theme Studio implementa una estructura CSS de alta precisión:
 * El contenedor superior (`toolbarview > .top-bar`) absorbe uniformemente el color de la barra desde el píxel 0.
 * Los `headerbar` interiores se mantienen 100% transparentes, eliminando solapamientos o sombras duplicadas.
 * La barra superior del panel lateral (`.sidebar-pane`) adopta de extremo a extremo el color del sidebar (`@sidebar_bg_color`), asegurando una continuidad estética perfecta entre panel y contenido.
 * Ventanas maximizadas o a pantalla completa eliminan limpiamente los bordes redondeados (`border-radius: 0 !important`).
 
-### 🦊 3. Integración Nativa con Mozilla Firefox
+### 🦊 4. Integración Nativa con Mozilla Firefox
 A diferencia de otros temas donde el navegador queda aislado del resto del escritorio:
 * Detecta automáticamente perfiles activos en rutas **XDG modernas** (`~/.config/mozilla/firefox/`), rutas clásicas (`~/.mozilla/firefox/`), **Flatpak** y **Snap**, así como LibreWolf y Waterfox.
 * Compila dinámicamente `userChrome.css` y `userContent.css` con los colores exactos de la paleta.
 * Configura de forma transparente `user.js` con `toolkit.legacyUserProfileCustomizations.stylesheets = true` y dibujado en barra de título.
 * **Controles de ventana precisos**: El contenedor exterior permanece 100% transparente y el semáforo hover (`traffic-hover`) ilumina únicamente el botón que recibe el foco, sin desbordamientos de color.
 
-### ⚡ 4. Compilador Multi-Destino Basado en SCSS (`sassc`)
+### ⚡ 5. Compilador Multi-Destino Basado en SCSS (`sassc`)
 Compila hojas de estilo completas en menos de 300 milisegundos:
 * Inyección dinámica de variables y métricas.
 * Sustitución inteligente de color primario y secundario en iconos SVG (`gnome-shell-start.svg`, calendarios, workspaces).
 * Conmutación automática en GTK 3: hereda de `gtk-contained.css` si el tema es claro, o `gtk-contained-dark.css` si es oscuro.
 
-### 🔁 5. Aplicador y Recarga en Caliente en 1-Clic (Hot-Reload)
+### 🔁 6. Aplicador y Recarga en Caliente en 1-Clic (Hot-Reload)
 * Aplica el tema sin reiniciar la sesión en entornos **Wayland** y **X11** mediante un pulso coordinado a través de `gsettings` y `dconf`.
 * Sincroniza el color de acento oficial del sistema (`accent-color` de GNOME 47+) con el tono más cercano de la paleta.
 
-### 🖼️ 6. Generador de Fondos de Pantalla Vectoriales 4K
+### 🖼️ 7. Generador de Fondos de Pantalla Vectoriales 4K
 Genera y aplica fondos SVG matemáticos (3840×2160) en estilos:
 * **Abstract Waves** (Ondas orgánicas fluidas estilo GNOME)
 * **Aurora** (Gradientes radiales atmosféricos de alto contraste)
 * **Geometric** (Polígonos modernos facetados con transparencias sutiles)
 
-### 📦 7. Exportador de Temas Portables (.ZIP)
+### 📦 8. Exportador de Temas Portables (.ZIP)
 Genera paquetes `.zip` listos para distribuir con un script instalador autónomo (`install.sh`) para que cualquier usuario de Linux pueda instalar tu creación con un solo comando.
 
 ---
@@ -155,23 +171,17 @@ sudo pacman -S --needed sassc python gnome-shell-extensions
 
 ## 🚀 Guía de Inicio Rápido (Quick Start)
 
-Puedes utilizar el proyecto en dos modalidades: mediante el **Estudio Visual Web interactivo** o mediante el **Instalador de Terminal CLI**.
+Puedes utilizar el proyecto en tres modalidades según tu preferencia: mediante el **Estudio Visual Web interactivo**, mediante el **Selector y Personalizador CLI interactivo en terminal (`themer-cli.py`)**, o mediante el **Instalador de Terminal CLI directo**.
 
-### Método A: Estudio Visual Web (Recomendado)
+### Método A: Estudio Visual Web
 
-1. Clona el repositorio y entra a la carpeta:
-   ```bash
-   git clone https://github.com/TU_USUARIO/gnome-theme-studio.git
-   cd gnome-theme-studio
-   ```
-
-2. Inicia el servidor de Theme Studio:
+1. Inicia el servidor de Theme Studio:
    ```bash
    ./start.sh
    ```
 
-3. Se abrirá automáticamente tu navegador en `http://localhost:5000`:
-   - Selecciona cualquiera de los **22 presets** o crea tu paleta personalizada.
+2. Se abrirá automáticamente tu navegador en `http://localhost:5000`:
+   - Selecciona cualquiera de los **26 presets** o crea tu paleta personalizada.
    - Ajusta colores de fondo, acento, cabeceras, superficies y texto.
    - Modifica métricas en vivo: radio de ventana, radio de botones y estilo de controles.
    - Elige el estilo de fondo de pantalla vectorial 4K.
@@ -179,9 +189,55 @@ Puedes utilizar el proyecto en dos modalidades: mediante el **Estudio Visual Web
 
 ---
 
-### Método B: Instalador CLI Directo (Terminal)
+### Método B: Selector y Personalizador CLI en Terminal (`themer-cli.py`)
 
-Si deseas aplicar de inmediato la versión precompilada del tema insigne (**Everforest Dark**) sin levantar el servidor web:
+Si prefieres la terminal pero quieres poder elegir cualquier preset de la biblioteca, personalizar sus apartados y aplicarlo con previsualizaciones de color en tiempo real (sin necesidad de navegador ni servidor web):
+
+```bash
+./themer-cli.py
+```
+
+#### Características del Studio CLI (Pantalla Única):
+* **Panel dual interactivo en 1 sola pantalla**:
+  - **Panel izquierdo (Presets)**: Navega por los 26 presets con las flechas `↑` y `↓`. La previsualización de la derecha se actualiza al instante.
+  - **Panel derecho (Ajustes)**: Cambia a este panel con `Tab` o `→`.
+* **Alternar valores con la barra espaciadora (`Espacio`)**:
+  - **Esquema**: Alterna al instante entre modo `Oscuro (Dark)` y `Claro (Light)`.
+  - **Acento**: Rota con cada pulsación entre la paleta oficial (Azul, Teal, Verde, Amarillo, Naranja, Rojo, etc.) con muestra de color RGB real.
+  - **Botones**: Rota entre `Semáforo macOS (hover)`, `Semáforo fijo`, `Monocromo GNOME` y `Minimalista`.
+  - **Posición**: Alterna entre `Derecha (GNOME)` e `Izquierda (macOS)`.
+  - **Curvatura**: Rota entre `Estándar (12px)`, `Moderno (16px)`, `Muy Redondo (22px)` y `Cuadrado (4px)`.
+  - **Fondo 4K**: Rota entre `Ondas fluidas (Waves)`, `Aurora boreal`, `Geométrico` y `Ninguno`.
+  - **Libadwaita / Firefox**: Activa o desactiva con `Espacio`.
+* **Aplicación inmediata en 1-Tecla**: Pulsa `A` (o `Enter`) en cualquier momento para compilar y aplicar el tema al escritorio con recarga en caliente Wayland.
+* **Acciones rápidas**: `S` (Guardar preset), `E` (Exportar ZIP), `R` (Restablecer GNOME) y `Q` (Salir).
+
+#### Modo de comandos directos (sin interfaz interactiva):
+```bash
+# Listar todos los presets con swatches de color
+./themer-cli.py --list
+
+# Aplicar un preset directamente
+./themer-cli.py --preset "Tokyo Night" --apply
+
+# Aplicar con personalizaciones directas por parámetro
+./themer-cli.py --preset "Catppuccin Mocha" --wallpaper-style aurora --layout left --apply
+
+# Exportar un preset a paquete .ZIP con instalador autónomo
+./themer-cli.py --preset "Nord Dark" --export
+
+# Ver el estado del entorno de escritorio GNOME
+./themer-cli.py --status
+
+# Restablecer GNOME a la apariencia predeterminada de fábrica
+./themer-cli.py --reset
+```
+
+---
+
+### Método C: Instalador CLI Directo Autónomo (Terminal)
+
+Si deseas aplicar de inmediato la versión precompilada del tema insigne (**Everforest Dark**) sin dependencias ni preguntas:
 
 ```bash
 ./install.sh
@@ -216,6 +272,7 @@ gnome-theme-studio/
 ├── .gitignore                     # Filtro de archivos compilados, temporales y venv
 ├── requirements.txt               # Dependencias Python (Flask)
 ├── start.sh                       # Lanzador del Theme Studio Web (gestiona venv y navegador)
+├── themer-cli.py                  # Selector y personalizador CLI interactivo en terminal
 ├── install.sh                     # Instalador y configurador CLI autónomo
 ├── uninstall.sh                   # Restaurador a valores de fábrica de GNOME
 ├── index.theme                    # Metadatos estándar FreeDesktop
