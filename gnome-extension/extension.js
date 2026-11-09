@@ -4,6 +4,7 @@
  *
  * Provides a native Quick Settings toggle button with a rich dropdown
  * to select, apply, and hot-reload theme presets in 1 click.
+ * Supports configurable favorite presets and compact mode via Preferences.
  */
 
 import Gio from 'gi://Gio';
@@ -16,8 +17,16 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
+const DEFAULT_FAVORITES = [
+    'Everforest Dark',
+    'Catppuccin Mocha',
+    'Tokyo Night',
+    'Nord Dark',
+    'Gruvbox Dark',
+];
+
 /**
- * Scrollable popup menu section to accommodate 20+ theme presets cleanly.
+ * Scrollable popup menu section to accommodate presets cleanly.
  */
 class PopupScrollMenuSection extends PopupMenu.PopupMenuSection {
     constructor() {
@@ -39,7 +48,7 @@ class PopupScrollMenuSection extends PopupMenu.PopupMenuSection {
  */
 const ThemeStudioToggle = GObject.registerClass(
 class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
-    _init(extension) {
+    _init(extension, settings) {
         super._init({
             title: 'Theme Studio',
             subtitle: _('Cargando...'),
@@ -49,6 +58,7 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
         });
 
         this._extension = extension;
+        this._settings = settings;
         this._isApplying = false;
         this._presets = {};
         this._menuItems = new Map();
@@ -57,32 +67,13 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
         // Submenu header
         this.menu.setHeader('preferences-desktop-theme-symbolic', 'GNOME Theme Studio');
 
-        // Scrollable preset list section
+        // Preset list container section
         this._presetSection = new PopupScrollMenuSection();
         this.menu.addMenuItem(this._presetSection);
 
-        // Separator between presets and quick actions
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-        // Action: Open Web Studio
-        const webStudioItem = new PopupMenu.PopupImageMenuItem(
-            _('Abrir Web Studio (localhost:5000)'),
-            'applications-internet-symbolic'
-        );
-        webStudioItem.connect('activate', () => {
-            this._openWebStudio();
-        });
-        this.menu.addMenuItem(webStudioItem);
-
-        // Action: Reset GNOME desktop to Adwaita
-        const resetItem = new PopupMenu.PopupImageMenuItem(
-            _('Restablecer escritorio (Adwaita)'),
-            'edit-undo-symbolic'
-        );
-        resetItem.connect('activate', () => {
-            this._resetToDefault();
-        });
-        this.menu.addMenuItem(resetItem);
+        // Actions container section (Web Studio, Reset, Preferences)
+        this._actionsSection = new PopupMenu.PopupMenuSection();
+        this.menu.addMenuItem(this._actionsSection);
 
         // Clicking the main toggle body opens the presets menu
         this.connect('clicked', () => {
@@ -96,11 +87,19 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
             }
         }, this);
 
+        // Listen for GSettings changes from Preferences Window / Extensions app
+        if (this._settings) {
+            this._extensionSettingsChangedId = this._settings.connect('changed', (s, key) => {
+                this._rebuildPresetsMenu();
+                this._rebuildActionsMenu();
+            });
+        }
+
         // Watch GNOME settings for GTK theme changes (sync from external apps/CLI)
         this._interfaceSettings = new Gio.Settings({
             schema_id: 'org.gnome.desktop.interface',
         });
-        this._settingsChangedId = this._interfaceSettings.connect(
+        this._interfaceSettingsChangedId = this._interfaceSettings.connect(
             'changed::gtk-theme',
             () => this._syncActiveTheme()
         );
@@ -183,6 +182,7 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
             const data = JSON.parse(new TextDecoder().decode(contents));
             this._presets = data;
             this._rebuildPresetsMenu();
+            this._rebuildActionsMenu();
             this._syncActiveTheme();
         } catch (err) {
             console.error(`[ThemeStudio] Error al parsear presets.json: ${err.message}`);
@@ -190,32 +190,124 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
     }
 
     /**
-     * Clears and rebuilds the preset list inside the scrollable section.
+     * Returns the array of configured favorite preset names.
+     */
+    _getFavoritePresetNames() {
+        const favorites = [];
+        if (this._settings) {
+            for (let i = 1; i <= 5; i++) {
+                const fav = this._settings.get_string(`favorite-preset-${i}`);
+                if (fav && !favorites.includes(fav)) {
+                    favorites.push(fav);
+                }
+            }
+        }
+        if (favorites.length === 0) {
+            return [...DEFAULT_FAVORITES];
+        }
+        return favorites;
+    }
+
+    /**
+     * Clears and rebuilds the preset list inside the menu section.
      */
     _rebuildPresetsMenu() {
         this._presetSection.removeAll();
         this._menuItems.clear();
 
-        const presetNames = Object.keys(this._presets);
+        const showOnlyFavorites = this._settings ? this._settings.get_boolean('show-only-favorites') : true;
+        const favorites = this._getFavoritePresetNames();
+        const allPresetNames = Object.keys(this._presets);
 
-        for (const name of presetNames) {
-            const cfg = this._presets[name] || {};
-            const isDark = (cfg.color_scheme === 'dark');
-            const iconName = isDark ? 'weather-clear-night-symbolic' : 'weather-clear-symbolic';
+        if (showOnlyFavorites) {
+            // Mode 1: Compact mode - Display only the 5 selected favorites
+            for (const name of favorites) {
+                this._addPresetMenuItem(name, this._presetSection);
+            }
+        } else {
+            // Mode 2: Full Catalog mode - Show favorites section first, then all remaining presets
+            for (const name of favorites) {
+                this._addPresetMenuItem(name, this._presetSection);
+            }
 
-            const item = new PopupMenu.PopupImageMenuItem(name, iconName, {
-                style_class: 'theme-studio-preset-item',
-            });
+            // Separator between favorites and remaining catalog
+            this._presetSection.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            item.connect('activate', () => {
-                this._applyPreset(name);
-            });
-
-            this._menuItems.set(name, item);
-            this._presetSection.addMenuItem(item);
+            for (const name of allPresetNames) {
+                if (!favorites.includes(name)) {
+                    this._addPresetMenuItem(name, this._presetSection);
+                }
+            }
         }
 
         this._updateOrnaments();
+    }
+
+    /**
+     * Creates and attaches a single preset menu item.
+     */
+    _addPresetMenuItem(name, container) {
+        const cfg = this._presets[name] || {};
+        const isDark = (cfg.color_scheme === 'dark');
+        const iconName = isDark ? 'weather-clear-night-symbolic' : 'weather-clear-symbolic';
+
+        const item = new PopupMenu.PopupImageMenuItem(name, iconName, {
+            style_class: 'theme-studio-preset-item',
+        });
+
+        item.connect('activate', () => {
+            this._applyPreset(name);
+        });
+
+        this._menuItems.set(name, item);
+        container.addMenuItem(item);
+    }
+
+    /**
+     * Rebuilds the action items at the bottom of the menu.
+     */
+    _rebuildActionsMenu() {
+        this._actionsSection.removeAll();
+
+        // Top separator before utility actions
+        this._actionsSection.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        const showWebStudio = this._settings ? this._settings.get_boolean('show-web-studio-shortcut') : true;
+        const showReset = this._settings ? this._settings.get_boolean('show-reset-shortcut') : true;
+
+        // Action: Open Web Studio
+        if (showWebStudio) {
+            const webStudioItem = new PopupMenu.PopupImageMenuItem(
+                _('Abrir Web Studio (localhost:5000)'),
+                'applications-internet-symbolic'
+            );
+            webStudioItem.connect('activate', () => {
+                this._openWebStudio();
+            });
+            this._actionsSection.addMenuItem(webStudioItem);
+        }
+
+        // Action: Reset GNOME desktop to Adwaita
+        if (showReset) {
+            const resetItem = new PopupMenu.PopupImageMenuItem(
+                _('Restablecer escritorio (Adwaita)'),
+                'edit-undo-symbolic'
+            );
+            resetItem.connect('activate', () => {
+                this._resetToDefault();
+            });
+            this._actionsSection.addMenuItem(resetItem);
+        }
+
+        // Action: Preferences dialog
+        const settingsItem = new PopupMenu.PopupImageMenuItem(
+            _('Configuración de la extensión...'),
+            'emblem-system-symbolic'
+        );
+        settingsItem.connect('activate', () => {
+            this._extension.openPreferences();
+        });
+        this._actionsSection.addMenuItem(settingsItem);
     }
 
     /**
@@ -290,7 +382,11 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
                         this._activePresetName = presetName;
                         this.subtitle = presetName;
                         this._updateOrnaments();
-                        Main.notify('GNOME Theme Studio', `${_('Tema aplicado')}: ${presetName}`);
+
+                        const notifyEnabled = this._settings ? this._settings.get_boolean('show-notifications') : true;
+                        if (notifyEnabled) {
+                            Main.notify('GNOME Theme Studio', `${_('Tema aplicado')}: ${presetName}`);
+                        }
                     } else {
                         console.error(`[ThemeStudio] Error al aplicar (${exitStatus}): ${stderr || stdout}`);
                         this.subtitle = _('Error al aplicar');
@@ -336,7 +432,11 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
                         this._activePresetName = null;
                         this.subtitle = 'Adwaita';
                         this._updateOrnaments();
-                        Main.notify('GNOME Theme Studio', _('Escritorio restablecido a valores de fábrica.'));
+
+                        const notifyEnabled = this._settings ? this._settings.get_boolean('show-notifications') : true;
+                        if (notifyEnabled) {
+                            Main.notify('GNOME Theme Studio', _('Escritorio restablecido a valores de fábrica.'));
+                        }
                     } else {
                         this.subtitle = _('Error al restablecer');
                     }
@@ -366,11 +466,16 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
      * Cleanup on destroy.
      */
     destroy() {
-        if (this._settingsChangedId && this._interfaceSettings) {
-            this._interfaceSettings.disconnect(this._settingsChangedId);
-            this._settingsChangedId = null;
+        if (this._extensionSettingsChangedId && this._settings) {
+            this._settings.disconnect(this._extensionSettingsChangedId);
+            this._extensionSettingsChangedId = null;
+        }
+        if (this._interfaceSettingsChangedId && this._interfaceSettings) {
+            this._interfaceSettings.disconnect(this._interfaceSettingsChangedId);
+            this._interfaceSettingsChangedId = null;
         }
         this._interfaceSettings = null;
+        this._settings = null;
         this._menuItems.clear();
         super.destroy();
     }
@@ -381,8 +486,15 @@ class ThemeStudioToggle extends QuickSettings.QuickMenuToggle {
  */
 export default class ThemeStudioExtension extends Extension {
     enable() {
+        let settings = null;
+        try {
+            settings = this.getSettings();
+        } catch (err) {
+            console.warn(`[ThemeStudio] No se pudo inicializar GSettings: ${err.message}`);
+        }
+
         this._indicator = new QuickSettings.SystemIndicator();
-        this._toggle = new ThemeStudioToggle(this);
+        this._toggle = new ThemeStudioToggle(this, settings);
 
         this._indicator.quickSettingsItems.push(this._toggle);
 

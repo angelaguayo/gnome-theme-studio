@@ -28,7 +28,14 @@ fi
 # 2. Prepare extensions directory
 mkdir -p "$HOME/.local/share/gnome-shell/extensions"
 
-# 3. Create Symlink (development-friendly) or copy
+# 3. Compile GSettings schemas
+if command -v glib-compile-schemas &>/dev/null && [ -d "$SCRIPT_DIR/schemas" ]; then
+    echo -e " ${BLUE}[i]${RESET} Compilando esquemas GSettings en schemas/..."
+    glib-compile-schemas "$SCRIPT_DIR/schemas"
+    echo -e " ${GREEN}[✓]${RESET} Esquemas GSettings compilados correctamente."
+fi
+
+# 4. Create Symlink (development-friendly) or copy
 if [ -L "$EXT_DEST" ] || [ -d "$EXT_DEST" ]; then
     echo -e " ${BLUE}[i]${RESET} Eliminando instalación previa en $EXT_DEST..."
     rm -rf "$EXT_DEST"
@@ -38,7 +45,7 @@ echo -e " ${BLUE}[i]${RESET} Enlazando extensión a ${BOLD}$EXT_DEST${RESET}..."
 ln -s "$SCRIPT_DIR" "$EXT_DEST"
 echo -e " ${GREEN}[✓]${RESET} Enlace simbólico creado correctamente."
 
-# 4. Attempt to enable extension via gnome-extensions CLI
+# 5. Attempt to enable extension via gnome-extensions CLI
 if command -v gnome-extensions &>/dev/null; then
     echo -e " ${BLUE}[i]${RESET} Habilitando extensión con gnome-extensions..."
     gnome-extensions enable "$UUID" 2>/dev/null || true
@@ -58,4 +65,8 @@ else
     echo -e "  • O bien cierra sesión y vuelve a iniciarla."
 fi
 echo -e "  • Una vez reiniciado el Shell, abre el ${BOLD}Quick Settings${RESET} (esquina superior derecha)."
-echo -e "    Verás el botón ${BOLD}«Theme Studio»${RESET} con tu tema activo y el menú desplegable.\n"
+echo -e "    Verás el botón ${BOLD}«Theme Studio»${RESET} con tu tema activo y los 5 accesos rápidos."
+echo -e "\n${BOLD}¿Cómo personalizar los 5 presets desde el Gestor de Extensiones?${RESET}"
+echo -e "  • Abre la app ${BOLD}Extensiones${RESET} (o Gestor de Extensiones) y haz clic en el botón de engranaje ${BOLD}⚙${RESET} junto a Theme Studio."
+echo -e "  • O ejecuta en terminal: ${BOLD}gnome-extensions prefs $UUID${RESET}"
+echo -e "  • O dentro del menú de Quick Settings, haz clic en ${BOLD}«Configuración de la extensión...»${RESET}\n"

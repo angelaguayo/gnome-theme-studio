@@ -2,6 +2,7 @@
   "name": "GNOME Theme Studio",
   "description": "Selector y aplicador en tiempo real de temas y presets de GNOME Theme Studio directamente desde el Quick Settings.",
   "uuid": "theme-studio@angelaguayo.github.io",
+  "settings-schema": "org.gnome.shell.extensions.theme-studio",
   "shell-version": [
     "45",
     "46",

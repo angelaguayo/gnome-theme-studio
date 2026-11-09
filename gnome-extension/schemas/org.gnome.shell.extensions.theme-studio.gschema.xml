@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-theme-studio">
+  <schema id="org.gnome.shell.extensions.theme-studio" path="/org/gnome/shell/extensions/theme-studio/">
+
+    <key name="show-only-favorites" type="b">
+      <default>true</default>
+      <summary>Mostrar solo los 5 presets favoritos</summary>
+      <description>Si es verdadero, el menú de Quick Settings muestra exclusivamente los 5 presets configurados en lugar del catálogo completo.</description>
+    </key>
+
+    <key name="favorite-preset-1" type="s">
+      <default>'Everforest Dark'</default>
+      <summary>Primer preset favorito</summary>
+      <description>Nombre del primer tema de acceso rápido a mostrar en Quick Settings.</description>
+    </key>
+
+    <key name="favorite-preset-2" type="s">
+      <default>'Catppuccin Mocha'</default>
+      <summary>Segundo preset favorito</summary>
+      <description>Nombre del segundo tema de acceso rápido a mostrar en Quick Settings.</description>
+    </key>
+
+    <key name="favorite-preset-3" type="s">
+      <default>'Tokyo Night'</default>
+      <summary>Tercer preset favorito</summary>
+      <description>Nombre del tercer tema de acceso rápido a mostrar en Quick Settings.</description>
+    </key>
+
+    <key name="favorite-preset-4" type="s">
+      <default>'Nord Dark'</default>
+      <summary>Cuarto preset favorito</summary>
+      <description>Nombre del cuarto tema de acceso rápido a mostrar en Quick Settings.</description>
+    </key>
+
+    <key name="favorite-preset-5" type="s">
+      <default>'Gruvbox Dark'</default>
+      <summary>Quinto preset favorito</summary>
+      <description>Nombre del quinto tema de acceso rápido a mostrar en Quick Settings.</description>
+    </key>
+
+    <key name="show-web-studio-shortcut" type="b">
+      <default>true</default>
+      <summary>Mostrar botón de Web Studio</summary>
+      <description>Muestra u oculta el botón para abrir Web Studio en el navegador.</description>
+    </key>
+
+    <key name="show-reset-shortcut" type="b">
+      <default>true</default>
+      <summary>Mostrar botón de restablecer</summary>
+      <description>Muestra u oculta el botón para restablecer GNOME a Adwaita.</description>
+    </key>
+
+    <key name="show-notifications" type="b">
+      <default>true</default>
+      <summary>Mostrar notificaciones</summary>
+      <description>Muestra notificaciones de escritorio al aplicar o restablecer temas.</description>
+    </key>
+
+  </schema>
+</schemalist>

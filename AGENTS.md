@@ -72,11 +72,13 @@ flowchart TD
 | [`uninstall.sh`](uninstall.sh) | Restores factory GNOME desktop defaults. | Resets GTK, Shell, color-scheme, accent-color, cleans Flatpak & Firefox. |
 | [`templates/index.html`](templates/index.html) | Single-page Theme Studio web interface. | Tailwind CSS, interactive mockup, color pickers, log console. |
 | [`static/js/app.js`](static/js/app.js) | Frontend client controller. | Reactive state, live preview updating, API fetch orchestration. |
-| [`gnome-extension/`](gnome-extension/) | Native GNOME Shell 45–51+ Quick Settings extension directory. | Sub-files: `metadata.json`, `extension.js`, `stylesheet.css`, `install.sh`, `README.md`. |
+| [`gnome-extension/`](gnome-extension/) | Native GNOME Shell 45–51+ Quick Settings extension directory. | Sub-files: `metadata.json`, `extension.js`, `prefs.js`, `stylesheet.css`, `install.sh`, `schemas/`, `README.md`. |
 | [`gnome-extension/extension.js`](gnome-extension/extension.js) | GJS ESM extension logic: QuickMenuToggle, scrollable menu, async worker. | `ThemeStudioToggle`, `PopupScrollMenuSection`, `_findProjectDir()`, `_getPythonBin()`, `_syncActiveTheme()`, `_applyPreset()`. |
-| [`gnome-extension/metadata.json`](gnome-extension/metadata.json) | Extension manifest declaring UUID and GNOME Shell compatibility. | `theme-studio@angelaguayo.github.io`, `shell-version: [45..51+]`. |
+| [`gnome-extension/prefs.js`](gnome-extension/prefs.js) | Native Libadwaita Preferences Window for the Extensions app. | `ThemeStudioPreferences` (`ExtensionPreferences`), 5 favorite preset dropdowns (`Adw.ComboRow`), compact mode switch. |
+| [`gnome-extension/schemas/`](gnome-extension/schemas/) | GSettings XML schema definition and compiled binary. | `org.gnome.shell.extensions.theme-studio.gschema.xml`, `gschemas.compiled`. |
+| [`gnome-extension/metadata.json`](gnome-extension/metadata.json) | Extension manifest declaring UUID, settings-schema, and GNOME Shell compatibility. | `theme-studio@angelaguayo.github.io`, `settings-schema`, `shell-version: [45..51+]`. |
 | [`gnome-extension/stylesheet.css`](gnome-extension/stylesheet.css) | Custom styling for scrollable section and layout limits. | `.theme-studio-scroll-section`, `max-height: 380px`. |
-| [`gnome-extension/install.sh`](gnome-extension/install.sh) | Automated symlink installer and extension enabler. | Symlinks to `~/.local/share/gnome-shell/extensions/$UUID` and runs `gnome-extensions enable`. |
+| [`gnome-extension/install.sh`](gnome-extension/install.sh) | Automated symlink installer, GSettings schema compiler, and extension enabler. | Compiles schemas, symlinks to `~/.local/share/gnome-shell/extensions/$UUID` and runs `gnome-extensions enable`. |
 
 ---
 
@@ -158,6 +160,7 @@ Modern GNOME applications (Nautilus, Settings, Text Editor, System Monitor) util
   3. All UI updates (spinner/subtitles) must be scheduled on the main loop.
   4. The preset list must be wrapped in `PopupScrollMenuSection` (`St.ScrollView`) with `vscrollbar_policy: AUTOMATIC` and `max-height: 380px` to prevent menu overflow on low-resolution displays (e.g. laptops, 768p/1080p).
   5. The extension must reliably locate project assets via dynamic resolution order (`GNOME_THEME_STUDIO_DIR` env $\rightarrow$ resolved symlink target $\rightarrow$ parent directory of `extension.js` $\rightarrow$ `~/gnome-theme-studio`), and prefer `venv/bin/python3` if present to guarantee dependency access.
+  6. The preferences window (`prefs.js`) must inherit from `ExtensionPreferences` (ESM), manage schema `org.gnome.shell.extensions.theme-studio`, and provide bi-directional live synchronization with `ThemeStudioToggle` via `Gio.Settings` so changes take effect immediately without Shell restart.
 
 ---
 
@@ -305,10 +308,13 @@ This ensures `./install.sh` run directly by terminal users always matches the la
 # Validate JSON manifest
 python3 -m json.tool gnome-extension/metadata.json > /dev/null
 
+# Validate and compile GSettings schema
+glib-compile-schemas --strict gnome-extension/schemas
+
 # Validate installer script syntax
 bash -n gnome-extension/install.sh
 
-# Test symlink creation and gnome-extensions enablement
+# Test symlink creation, schema compilation and gnome-extensions enablement
 ./gnome-extension/install.sh
 ```
 

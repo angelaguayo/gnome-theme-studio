@@ -11,7 +11,7 @@
 **GNOME Theme Studio** es una suite profesional, visual y completa para crear, personalizar, compilar y aplicar temas extremadamente pulidos y unificados para el entorno de escritorio **Linux GNOME Desktop**.
 
 Tematiza de forma sincronizada y con consistencia milimétrica:
-* **Extensión nativa de GNOME Shell** integrada en Quick Settings para selección de presets y recarga en 1-clic.
+* **Extensión nativa de GNOME Shell** integrada en Quick Settings con ventana de preferencias Libadwaita para personalizar tus 5 presets favoritos y aplicarlos en 1-clic.
 * **GNOME Shell** (45, 46, 47, 51+)
 * **GTK 4 / Libadwaita** (Nautilus, Ajustes, Monitor del Sistema, Visor de Textos, etc.)
 * **GTK 3** (GIMP, Inkscape, Nemo, pavucontrol, gestores de archivos clásicos)
@@ -50,8 +50,8 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
   <tr>
     <td width="50%" align="center">
       <img src="screenshots/extension.png" alt="Extensión GNOME Shell Quick Settings" width="100%"><br>
-      <b>Extensión Quick Settings (<code>gnome-extension/</code>)</b><br>
-      <sub>Menú nativo desplegable en el panel superior: cambia de preset al instante en 1 clic y sincronizado en tiempo real.</sub>
+      <b>Extensión Quick Settings & Preferencias (<code>gnome-extension/</code>)</b><br>
+      <sub>Menú nativo en el panel superior con 5 presets favoritos personalizables desde el Gestor de Extensiones y aplicación en 1 clic.</sub>
     </td>
     <td width="50%" align="center">
       <img src="screenshots/nautilus.png" alt="Integración GTK 4 / Libadwaita en Nautilus" width="100%"><br>
@@ -90,10 +90,12 @@ Entorno interactivo TUI en pantalla única (estilo *htop / kconfig*) sin depende
 ### 🧩 3. Extensión Nativa Quick Settings para GNOME Shell (45–51+)
 Integración oficial y fluida con el menú de ajustes rápidos (*Quick Settings*) de GNOME:
 * **Acceso Inmediato desde el Panel Superior**: Botón nativo de GNOME con icono de paleta (`preferences-desktop-theme-symbolic`) que refleja en tiempo real el tema activo en su subtítulo.
-* **Menú Desplegable con Scroll Adaptativo**: Lista scrollable con soporte para más de 20 temas calibrados (Everforest, Catppuccin, Tokyo Night, Dracula, Nord, Gruvbox, etc.), adaptándose a cualquier altura de monitor sin desbordar la pantalla.
+* **5 Presets Favoritos Personalizables**: Elige exactamente qué 5 temas aparecen en el menú para un acceso ultra rápido y un escritorio limpio.
+* **Ventana de Preferencias Nativa (`prefs.js` / Libadwaita)**: Modifica tus 5 presets favoritos, activa el modo compacto o personaliza accesos directos desde el **Gestor de Extensiones** (`gnome-extensions-app`).
+* **Menú con Soporte para Catálogo Completo**: Alterna entre ver únicamente los 5 favoritos o explorar los más de 20 temas calibrados con desplazamiento suave (*scroll* adaptativo).
 * **Aplicación 1-Clic Asíncrona (Non-Blocking)**: Compila y aplica GTK4, GTK3, GNOME Shell, Firefox y fondos 4K en segundo plano mediante `Gio.Subprocess`, manteniendo el compositor de GNOME a 60/120+ FPS sin congelar la pantalla.
 * **Sincronización Reactiva Bidireccional**: Detecta cambios realizados desde la Web UI o la terminal (`themer-cli.py`) a través de `Gio.Settings` (`changed::gtk-theme`) y actualiza su subtítulo y marca de verificación (`✓`) al instante.
-* **Acciones Rápidas Integradas**: Atajos de 1-clic para abrir el Web Studio (`http://localhost:5000`) o restablecer el escritorio a Adwaita de fábrica.
+* **Acciones Rápidas Integradas**: Atajos de 1-clic para abrir el Web Studio (`http://localhost:5000`), restablecer el escritorio a Adwaita de fábrica o abrir la configuración de la extensión.
 
 ### 📐 4. Arquitectura de Título y Barra Superior de Nautilus (Zero-Desfase)
 En Libadwaita moderna (`AdwToolbarView`), muchas implementaciones de temas provocan un desfase o franja de 6 píxeles sobre la barra de título de Nautilus (donde el fondo de la ventana se filtra). GNOME Theme Studio implementa una estructura CSS de alta precisión:
@@ -294,7 +296,7 @@ Si deseas cambiar de tema y preset en cualquier momento directamente desde el pa
    ```bash
    ./gnome-extension/install.sh
    ```
-   *El instalador enlaza automáticamente la extensión en `~/.local/share/gnome-shell/extensions/theme-studio@angelaguayo.github.io` y la habilita.*
+   *El instalador compila los esquemas GSettings, enlaza automáticamente la extensión en `~/.local/share/gnome-shell/extensions/theme-studio@angelaguayo.github.io` y la habilita.*
 
 2. **Activa la extensión por primera vez:**
    * **En Wayland**: GNOME Shell no recarga extensiones nuevas en caliente; simplemente **cierra tu sesión de usuario y vuelve a iniciarla**.
@@ -303,15 +305,32 @@ Si deseas cambiar de tema y preset en cualquier momento directamente desde el pa
 3. **Uso desde Quick Settings:**
    * Haz clic en el menú del sistema (esquina superior derecha de tu pantalla).
    * Verás el nuevo botón interactivo **«Theme Studio»** mostrando el tema actualmente activo en su subtítulo.
-   * Haz clic en la flecha o cuerpo del botón para desplegar el catálogo de más de 20 presets calibrados con desplazamiento vertical suave (*scroll*).
+   * Haz clic en la flecha o cuerpo del botón para ver los **5 presets favoritos** con aplicación en 1 clic.
    * Al seleccionar cualquier tema, la extensión compilará y aplicará el tema en segundo plano de forma asíncrona (sin congelar la pantalla) y ejecutará la recarga en caliente Wayland.
-   * Disfruta de accesos directos rápidos al pie del menú para **Abrir Web Studio (`localhost:5000`)** o **Restablecer escritorio (Adwaita)**.
+   * Disfruta de accesos directos al pie del menú para **Abrir Web Studio (`localhost:5000`)**, **Restablecer escritorio (Adwaita)** o **Configuración de la extensión...**.
 
-4. **Sincronización Total y Detección de Entorno:**
+4. **Personalizar los 5 Presets desde el Gestor de Extensiones:**
+   * Abre la aplicación **Extensiones** (o *Gestor de Extensiones* / `gnome-extensions-app`).
+   * Haz clic en el botón de engranaje **⚙** al lado de «GNOME Theme Studio» (o pulsa *«Configuración de la extensión...»* desde el menú de Quick Settings, o corre `gnome-extensions prefs theme-studio@angelaguayo.github.io`).
+   * En la ventana de preferencias:
+     - **Selecciona tus 5 temas preferidos**: Usa los desplegables (*Opción 1 a 5*) para elegir exactamente qué paletas deseas tener en el panel superior (Everforest, Catppuccin, Tokyo Night, Nord, Gruvbox, etc.).
+     - **Modo Compacto**: Alterna el interruptor *«Mostrar únicamente los 5 favoritos»* para mantener el menú ultra ligero o mostrar el catálogo completo de más de 20 temas.
+     - **Accesos y Notificaciones**: Activa o desactiva botones auxiliares y notificaciones de escritorio al aplicar temas.
+   * *Tip para usuarios de terminal (automatización mediante `gsettings`):*
+     ```bash
+     # Cambiar el preset favorito 1 a Tokyo Night
+     gsettings set org.gnome.shell.extensions.theme-studio favorite-preset-1 "Tokyo Night"
+
+     # Activar modo compacto (solo los 5 favoritos)
+     gsettings set org.gnome.shell.extensions.theme-studio show-only-favorites true
+     ```
+
+5. **Sincronización Total y Detección de Entorno:**
    * Si cambias de tema mediante `themer-cli.py` o Web Studio, el indicador del panel superior se sincroniza automáticamente en tiempo real.
-   * La extensión detecta automáticamente el entorno virtual `venv/` del proyecto y resuelve las rutas relativas sin configuraciones manuales requeridas.
+   * Los cambios que realices en el Gestor de Extensiones se reflejan al instante en el menú sin reiniciar el Shell.
+   * La extensión detecta automáticamente el entorno virtual `venv/` del proyecto y resuelve las dependencias sin configuraciones manuales requeridas.
 
-5. **Desinstalación o desactivación de la extensión:**
+6. **Desinstalación o desactivación de la extensión:**
    ```bash
    gnome-extensions disable theme-studio@angelaguayo.github.io
    rm -rf ~/.local/share/gnome-shell/extensions/theme-studio@angelaguayo.github.io
@@ -333,10 +352,14 @@ gnome-theme-studio/
 ├── install.sh                     # Instalador y configurador CLI autónomo
 ├── uninstall.sh                   # Restaurador a valores de fábrica de GNOME
 ├── gnome-extension/               # Extensión nativa de GNOME Shell 45–51+ para Quick Settings
-│   ├── metadata.json              # Definición, UUID y versiones de GNOME Shell compatibles
+│   ├── metadata.json              # Definición, UUID, settings-schema y versiones compatibles
 │   ├── extension.js               # Implementación en GJS ESM con QuickMenuToggle y llamadas async
+│   ├── prefs.js                   # Ventana de preferencias nativa Libadwaita (selección de 5 favoritos)
 │   ├── stylesheet.css             # Estilos CSS de la extensión y límites de scroll
-│   ├── install.sh                 # Script instalador y habilitador con detección de entorno
+│   ├── install.sh                 # Script instalador, compilador de esquemas y habilitador
+│   ├── schemas/                   # Definición de esquemas GSettings
+│   │   ├── org.gnome.shell.extensions.theme-studio.gschema.xml
+│   │   └── gschemas.compiled      # Esquema binario compilado
 │   └── README.md                  # Documentación dedicada de la extensión
 ├── index.theme                    # Metadatos estándar FreeDesktop
 ├── app.py                         # Servidor Flask y API REST
