@@ -2,6 +2,7 @@
 
 [![Linux](https://img.shields.io/badge/Platform-Linux%20%7C%20GNOME-blue?logo=linux&logoColor=white)](https://www.gnome.org/)
 [![GNOME Shell](https://img.shields.io/badge/GNOME%20Shell-45%20%7C%2046%20%7C%2047%20%7C%2051%2B-orange?logo=gnome)](https://gitlab.gnome.org/GNOME/gnome-shell)
+[![GNOME Extension](https://img.shields.io/badge/Quick%20Settings-Extension-9cf?logo=gnome&logoColor=white)](gnome-extension/)
 [![GTK Versions](https://img.shields.io/badge/GTK-3%20%7C%204%20(Libadwaita)-green?logo=gtk)](https://www.gtk.org/)
 [![Firefox](https://img.shields.io/badge/Browser-Mozilla%20Firefox-critical?logo=firefox)](https://www.mozilla.org/firefox/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
@@ -10,6 +11,7 @@
 **GNOME Theme Studio** es una suite profesional, visual y completa para crear, personalizar, compilar y aplicar temas extremadamente pulidos y unificados para el entorno de escritorio **Linux GNOME Desktop**.
 
 Tematiza de forma sincronizada y con consistencia milimétrica:
+* **Extensión nativa de GNOME Shell** integrada en Quick Settings para selección de presets y recarga en 1-clic.
 * **GNOME Shell** (45, 46, 47, 51+)
 * **GTK 4 / Libadwaita** (Nautilus, Ajustes, Monitor del Sistema, Visor de Textos, etc.)
 * **GTK 3** (GIMP, Inkscape, Nemo, pavucontrol, gestores de archivos clásicos)
@@ -21,7 +23,7 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
 
 ## 📸 Capturas de Pantalla (Showcase)
 
-<!-- Coloca tus capturas en la carpeta screenshots/ con los nombres: desktop.png, studio.png, cli.png, nautilus.png y firefox.png -->
+<!-- Coloca tus capturas en la carpeta screenshots/ con los nombres: desktop.png, studio.png, cli.png, extension.png, nautilus.png y firefox.png -->
 
 <p align="center">
   <img src="screenshots/desktop.png" alt="GNOME Theme Studio Desktop Showcase" width="100%">
@@ -39,7 +41,7 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
     <td width="50%" align="center">
       <img src="screenshots/cli.png" alt="GNOME Theme Studio CLI Interactive Studio" width="100%"><br>
       <b>Studio Interactivo CLI (<code>./themer-cli.py</code>)</b><br>
-      <sub>Panel dual en pantalla única: navega presets y altera esquemas, acentos y botones con la barra espaciadora.</sub>
+      <sub>Panel unificado en terminal: navega presets, altera esquemas, acentos y botones con la barra espaciadora.</sub>
     </td>
   </tr>
 </table>
@@ -47,11 +49,21 @@ Tematiza de forma sincronizada y con consistencia milimétrica:
 <table align="center" width="100%">
   <tr>
     <td width="50%" align="center">
+      <img src="screenshots/extension.png" alt="Extensión GNOME Shell Quick Settings" width="100%"><br>
+      <b>Extensión Quick Settings (<code>gnome-extension/</code>)</b><br>
+      <sub>Menú nativo desplegable en el panel superior: cambia de preset al instante en 1 clic y sincronizado en tiempo real.</sub>
+    </td>
+    <td width="50%" align="center">
       <img src="screenshots/nautilus.png" alt="Integración GTK 4 / Libadwaita en Nautilus" width="100%"><br>
       <b>Libadwaita / Nautilus (Zero-Desfase)</b><br>
       <sub>Headerbar continuo de borde a borde y barra lateral perfectamente alineada sin franjas residuales.</sub>
     </td>
-    <td width="50%" align="center">
+  </tr>
+</table>
+
+<table align="center" width="100%">
+  <tr>
+    <td width="100%" align="center">
       <img src="screenshots/firefox.png" alt="Integración Mozilla Firefox userChrome" width="100%"><br>
       <b>Mozilla Firefox + userChrome</b><br>
       <sub>Pestañas nativas integradas y botones de ventana con semáforo hover interactivo.</sub>
@@ -75,37 +87,45 @@ Entorno interactivo TUI en pantalla única (estilo *htop / kconfig*) sin depende
 * **1-Tecla / 1-Clic (`A` / `Enter`)**: Compila y aplica directamente el tema con recarga en caliente Wayland.
 * **Automatización por flags**: Compatible con ejecución desatendida mediante `--list`, `--preset`, `--apply`, `--export`, `--status` y `--reset`.
 
-### 📐 3. Arquitectura de Título y Barra Superior de Nautilus (Zero-Desfase)
+### 🧩 3. Extensión Nativa Quick Settings para GNOME Shell (45–51+)
+Integración oficial y fluida con el menú de ajustes rápidos (*Quick Settings*) de GNOME:
+* **Acceso Inmediato desde el Panel Superior**: Botón nativo de GNOME con icono de paleta (`preferences-desktop-theme-symbolic`) que refleja en tiempo real el tema activo en su subtítulo.
+* **Menú Desplegable con Scroll Adaptativo**: Lista scrollable con soporte para más de 20 temas calibrados (Everforest, Catppuccin, Tokyo Night, Dracula, Nord, Gruvbox, etc.), adaptándose a cualquier altura de monitor sin desbordar la pantalla.
+* **Aplicación 1-Clic Asíncrona (Non-Blocking)**: Compila y aplica GTK4, GTK3, GNOME Shell, Firefox y fondos 4K en segundo plano mediante `Gio.Subprocess`, manteniendo el compositor de GNOME a 60/120+ FPS sin congelar la pantalla.
+* **Sincronización Reactiva Bidireccional**: Detecta cambios realizados desde la Web UI o la terminal (`themer-cli.py`) a través de `Gio.Settings` (`changed::gtk-theme`) y actualiza su subtítulo y marca de verificación (`✓`) al instante.
+* **Acciones Rápidas Integradas**: Atajos de 1-clic para abrir el Web Studio (`http://localhost:5000`) o restablecer el escritorio a Adwaita de fábrica.
+
+### 📐 4. Arquitectura de Título y Barra Superior de Nautilus (Zero-Desfase)
 En Libadwaita moderna (`AdwToolbarView`), muchas implementaciones de temas provocan un desfase o franja de 6 píxeles sobre la barra de título de Nautilus (donde el fondo de la ventana se filtra). GNOME Theme Studio implementa una estructura CSS de alta precisión:
 * El contenedor superior (`toolbarview > .top-bar`) absorbe uniformemente el color de la barra desde el píxel 0.
 * Los `headerbar` interiores se mantienen 100% transparentes, eliminando solapamientos o sombras duplicadas.
 * La barra superior del panel lateral (`.sidebar-pane`) adopta de extremo a extremo el color del sidebar (`@sidebar_bg_color`), asegurando una continuidad estética perfecta entre panel y contenido.
 * Ventanas maximizadas o a pantalla completa eliminan limpiamente los bordes redondeados (`border-radius: 0 !important`).
 
-### 🦊 4. Integración Nativa con Mozilla Firefox
+### 🦊 5. Integración Nativa con Mozilla Firefox
 A diferencia de otros temas donde el navegador queda aislado del resto del escritorio:
 * Detecta automáticamente perfiles activos en rutas **XDG modernas** (`~/.config/mozilla/firefox/`), rutas clásicas (`~/.mozilla/firefox/`), **Flatpak** y **Snap**, así como LibreWolf y Waterfox.
 * Compila dinámicamente `userChrome.css` y `userContent.css` con los colores exactos de la paleta.
 * Configura de forma transparente `user.js` con `toolkit.legacyUserProfileCustomizations.stylesheets = true` y dibujado en barra de título.
 * **Controles de ventana precisos**: El contenedor exterior permanece 100% transparente y el semáforo hover (`traffic-hover`) ilumina únicamente el botón que recibe el foco, sin desbordamientos de color.
 
-### ⚡ 5. Compilador Multi-Destino Basado en SCSS (`sassc`)
+### ⚡ 6. Compilador Multi-Destino Basado en SCSS (`sassc`)
 Compila hojas de estilo completas en menos de 300 milisegundos:
 * Inyección dinámica de variables y métricas.
 * Sustitución inteligente de color primario y secundario en iconos SVG (`gnome-shell-start.svg`, calendarios, workspaces).
 * Conmutación automática en GTK 3: hereda de `gtk-contained.css` si el tema es claro, o `gtk-contained-dark.css` si es oscuro.
 
-### 🔁 6. Aplicador y Recarga en Caliente en 1-Clic (Hot-Reload)
+### 🔁 7. Aplicador y Recarga en Caliente en 1-Clic (Hot-Reload)
 * Aplica el tema sin reiniciar la sesión en entornos **Wayland** y **X11** mediante un pulso coordinado a través de `gsettings` y `dconf`.
 * Sincroniza el color de acento oficial del sistema (`accent-color` de GNOME 47+) con el tono más cercano de la paleta.
 
-### 🖼️ 7. Generador de Fondos de Pantalla Vectoriales 4K
+### 🖼️ 8. Generador de Fondos de Pantalla Vectoriales 4K
 Genera y aplica fondos SVG matemáticos (3840×2160) en estilos:
 * **Abstract Waves** (Ondas orgánicas fluidas estilo GNOME)
 * **Aurora** (Gradientes radiales atmosféricos de alto contraste)
 * **Geometric** (Polígonos modernos facetados con transparencias sutiles)
 
-### 📦 8. Exportador de Temas Portables (.ZIP)
+### 📦 9. Exportador de Temas Portables (.ZIP)
 Genera paquetes `.zip` listos para distribuir con un script instalador autónomo (`install.sh`) para que cualquier usuario de Linux pueda instalar tu creación con un solo comando.
 
 ---
@@ -171,7 +191,7 @@ sudo pacman -S --needed sassc python gnome-shell-extensions
 
 ## 🚀 Guía de Inicio Rápido (Quick Start)
 
-Puedes utilizar el proyecto en tres modalidades según tu preferencia: mediante el **Estudio Visual Web interactivo**, mediante el **Selector y Personalizador CLI interactivo en terminal (`themer-cli.py`)**, o mediante el **Instalador de Terminal CLI directo**.
+Puedes utilizar el proyecto en cuatro modalidades según tu preferencia: mediante el **Estudio Visual Web interactivo**, mediante el **Selector y Personalizador CLI interactivo en terminal (`themer-cli.py`)**, mediante el **Instalador de Terminal CLI directo (`install.sh`)**, o directamente desde el panel superior con la **Extensión nativa de GNOME Quick Settings (`gnome-extension/`)**.
 
 ### Método A: Estudio Visual Web
 
@@ -266,6 +286,39 @@ El script ejecutará automáticamente:
 
 ---
 
+### Método D: Extensión GNOME Quick Settings (`gnome-extension/`)
+
+Si deseas cambiar de tema y preset en cualquier momento directamente desde el panel superior de GNOME sin abrir la terminal ni el navegador web:
+
+1. **Instala la extensión en tu sistema:**
+   ```bash
+   ./gnome-extension/install.sh
+   ```
+   *El instalador enlaza automáticamente la extensión en `~/.local/share/gnome-shell/extensions/theme-studio@angelaguayo.github.io` y la habilita.*
+
+2. **Activa la extensión por primera vez:**
+   * **En Wayland**: GNOME Shell no recarga extensiones nuevas en caliente; simplemente **cierra tu sesión de usuario y vuelve a iniciarla**.
+   * **En X11**: Presiona `Alt + F2`, escribe `r` y presiona `Enter`.
+
+3. **Uso desde Quick Settings:**
+   * Haz clic en el menú del sistema (esquina superior derecha de tu pantalla).
+   * Verás el nuevo botón interactivo **«Theme Studio»** mostrando el tema actualmente activo en su subtítulo.
+   * Haz clic en la flecha o cuerpo del botón para desplegar el catálogo de más de 20 presets calibrados con desplazamiento vertical suave (*scroll*).
+   * Al seleccionar cualquier tema, la extensión compilará y aplicará el tema en segundo plano de forma asíncrona (sin congelar la pantalla) y ejecutará la recarga en caliente Wayland.
+   * Disfruta de accesos directos rápidos al pie del menú para **Abrir Web Studio (`localhost:5000`)** o **Restablecer escritorio (Adwaita)**.
+
+4. **Sincronización Total y Detección de Entorno:**
+   * Si cambias de tema mediante `themer-cli.py` o Web Studio, el indicador del panel superior se sincroniza automáticamente en tiempo real.
+   * La extensión detecta automáticamente el entorno virtual `venv/` del proyecto y resuelve las rutas relativas sin configuraciones manuales requeridas.
+
+5. **Desinstalación o desactivación de la extensión:**
+   ```bash
+   gnome-extensions disable theme-studio@angelaguayo.github.io
+   rm -rf ~/.local/share/gnome-shell/extensions/theme-studio@angelaguayo.github.io
+   ```
+
+---
+
 ## 🛠️ Estructura del Repositorio (Repository Structure)
 
 ```text
@@ -279,6 +332,12 @@ gnome-theme-studio/
 ├── themer-cli.py                  # Selector y personalizador CLI interactivo en terminal
 ├── install.sh                     # Instalador y configurador CLI autónomo
 ├── uninstall.sh                   # Restaurador a valores de fábrica de GNOME
+├── gnome-extension/               # Extensión nativa de GNOME Shell 45–51+ para Quick Settings
+│   ├── metadata.json              # Definición, UUID y versiones de GNOME Shell compatibles
+│   ├── extension.js               # Implementación en GJS ESM con QuickMenuToggle y llamadas async
+│   ├── stylesheet.css             # Estilos CSS de la extensión y límites de scroll
+│   ├── install.sh                 # Script instalador y habilitador con detección de entorno
+│   └── README.md                  # Documentación dedicada de la extensión
 ├── index.theme                    # Metadatos estándar FreeDesktop
 ├── app.py                         # Servidor Flask y API REST
 ├── compiler.py                    # Motor de inyección y compilación Sass/SCSS
@@ -356,6 +415,7 @@ print('Compilación exitosa:', res['success'], 'en', res['duration_ms'], 'ms')
 Si en cualquier momento deseas volver a la apariencia original y limpia de GNOME:
 1. Desde la Web: Pulsa el botón **"Restablecer Predeterminados de GNOME"**.
 2. Desde la Terminal: Ejecuta `./uninstall.sh`.
+3. Desde la Extensión Quick Settings: Selecciona la opción **«Restablecer escritorio (Adwaita)»** directamente en el menú desplegable.
 
 Esto restablecerá:
 * Tema GTK a `Adwaita`
@@ -363,6 +423,12 @@ Esto restablecerá:
 * Tema de GNOME Shell al predeterminado del sistema
 * Eliminación de estilos custom en `~/.config/gtk-4.0/gtk.css` y perfiles de Firefox
 * Restauración del fondo de pantalla original de GNOME.
+
+> ℹ️ **Extensión Quick Settings**: Si deseas deshabilitar o desinstalar la extensión, ejecuta:
+> ```bash
+> gnome-extensions disable theme-studio@angelaguayo.github.io
+> rm -rf ~/.local/share/gnome-shell/extensions/theme-studio@angelaguayo.github.io
+> ```
 
 ---
 

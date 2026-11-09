@@ -14,10 +14,11 @@ This document is the official technical specification, architecture contract, an
 * **Sandboxed Flatpak apps**
 * **Vector 4K Desktop Wallpapers**
 
-The project provides three usage modes that must always remain in perfect parity:
+The project provides four usage modes that must always remain in perfect parity:
 1. **Visual Studio Mode (Web GUI)**: Real-time interactive mockup, live CSS editing, color pickers, metric sliders, compilation logs, and 1-click live hot-reload (`app.py`, `templates/index.html`, `static/js/app.js`).
 2. **Interactive CLI Studio Mode (`themer-cli.py`)**: Rich-powered single-card unified terminal interface with smooth row navigation (`↑`/`↓`), live cycling of presets and parameters (`←`/`→`/`Space`), GNOME accents, macOS traffic lights, animated progress spinners, and 1-key live hot-reload (`A` / `Enter`). Auto-detects local `venv/` site-packages and supports headless automation flags (`--apply`, `--list`, `--export`, `--reset`).
 3. **Direct CLI Mode**: Fully automated bash installer and uninstaller (`install.sh`, `uninstall.sh`) that works out-of-the-box in headless or terminal environments.
+4. **GNOME Shell Quick Settings Extension (`gnome-extension/`)**: Native Quick Settings indicator and dropdown (`QuickSettings.QuickMenuToggle`), live preset selection from the top panel, real-time sync with desktop settings, and async 1-click apply without screen freezes.
 
 ---
 
@@ -30,6 +31,9 @@ flowchart TD
     UI["Web Studio UI (index.html + app.js)"] -->|JSON API Requests| APP["Flask Application Server (app.py)"]
     TUI["CLI Studio (themer-cli.py)"] -->|Direct Python Engine Calls| COMPILER["SCSS Compiler Engine (compiler.py)"]
     TUI -->|1-Key Live Apply| INSTALLER["Installer & Hot-Reload Engine (installer.py)"]
+    EXT["Quick Settings Extension (gnome-extension/)"] -->|Async Gio.Subprocess| TUI
+    EXT -->|Reads Presets| PRESETS_FILE["presets.json"]
+    EXT -.->|Watches Desktop Changes| GSETTINGS["gsettings & dconf CLI"]
     CLI["CLI Scripts (install.sh / uninstall.sh)"] -->|Direct File Copy| SYSTEM["User GNOME Desktop"]
     
     APP -->|Load/Save Presets| PRESETS["Preset Manager (presets.py + presets.json)"]
@@ -46,7 +50,7 @@ flowchart TD
     INSTALLER -->|Applies Libadwaita| GTK4_DIR["~/.config/gtk-4.0/gtk.css"]
     INSTALLER -->|Scans & Deploys| FIREFOX["Firefox Profiles (~/.config/mozilla/firefox, etc.)"]
     INSTALLER -->|Propagates to Flatpak| FLATPAK["~/.var/app/*/config/gtk-4.0/"]
-    INSTALLER -->|Executes Hot-Reload Pulse| GSETTINGS["gsettings & dconf CLI"]
+    INSTALLER -->|Executes Hot-Reload Pulse| GSETTINGS
 ```
 
 ---
@@ -68,6 +72,11 @@ flowchart TD
 | [`uninstall.sh`](uninstall.sh) | Restores factory GNOME desktop defaults. | Resets GTK, Shell, color-scheme, accent-color, cleans Flatpak & Firefox. |
 | [`templates/index.html`](templates/index.html) | Single-page Theme Studio web interface. | Tailwind CSS, interactive mockup, color pickers, log console. |
 | [`static/js/app.js`](static/js/app.js) | Frontend client controller. | Reactive state, live preview updating, API fetch orchestration. |
+| [`gnome-extension/`](gnome-extension/) | Native GNOME Shell 45–51+ Quick Settings extension directory. | Sub-files: `metadata.json`, `extension.js`, `stylesheet.css`, `install.sh`, `README.md`. |
+| [`gnome-extension/extension.js`](gnome-extension/extension.js) | GJS ESM extension logic: QuickMenuToggle, scrollable menu, async worker. | `ThemeStudioToggle`, `PopupScrollMenuSection`, `_findProjectDir()`, `_getPythonBin()`, `_syncActiveTheme()`, `_applyPreset()`. |
+| [`gnome-extension/metadata.json`](gnome-extension/metadata.json) | Extension manifest declaring UUID and GNOME Shell compatibility. | `theme-studio@angelaguayo.github.io`, `shell-version: [45..51+]`. |
+| [`gnome-extension/stylesheet.css`](gnome-extension/stylesheet.css) | Custom styling for scrollable section and layout limits. | `.theme-studio-scroll-section`, `max-height: 380px`. |
+| [`gnome-extension/install.sh`](gnome-extension/install.sh) | Automated symlink installer and extension enabler. | Symlinks to `~/.local/share/gnome-shell/extensions/$UUID` and runs `gnome-extensions enable`. |
 
 ---
 
@@ -140,6 +149,15 @@ Modern GNOME applications (Nautilus, Settings, Text Editor, System Monitor) util
 * Compilation must occur in a dedicated temporary workspace: `build/.tmp_<theme_name>_<timestamp>`.
 * Raw `.scss` files and intermediate `scss/` folders must be deleted before moving the output to `build/<theme_name>`.
 * The final build directory must only contain clean, production `.css` and asset files.
+
+### 🛡️ Invariant 6: GNOME Shell Quick Settings Non-Blocking Async Execution
+* **THE BUG TO PREVENT:** GNOME Shell's UI runs on a single JavaScript thread tied directly to Mutter's compositor loop. Calling synchronous CLI commands (`GLib.spawn_command_line_sync`) or synchronous file I/O during theme compilation causes the entire GNOME compositor to drop frames and freeze user input for 300–800ms.
+* **THE MANDATORY RULE:**
+  1. The extension must execute `themer-cli.py --preset "<Name>" --apply` asynchronously via `Gio.Subprocess.new()` using `Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE`.
+  2. Subprocess completion must be awaited via `wait_check_async()` or async pipes without blocking the main event loop.
+  3. All UI updates (spinner/subtitles) must be scheduled on the main loop.
+  4. The preset list must be wrapped in `PopupScrollMenuSection` (`St.ScrollView`) with `vscrollbar_policy: AUTOMATIC` and `max-height: 380px` to prevent menu overflow on low-resolution displays (e.g. laptops, 768p/1080p).
+  5. The extension must reliably locate project assets via dynamic resolution order (`GNOME_THEME_STUDIO_DIR` env $\rightarrow$ resolved symlink target $\rightarrow$ parent directory of `extension.js` $\rightarrow$ `~/gnome-theme-studio`), and prefer `venv/bin/python3` if present to guarantee dependency access.
 
 ---
 
@@ -282,6 +300,18 @@ Whenever any file inside `base_theme/` is modified, you **must** recompile the f
 
 This ensures `./install.sh` run directly by terminal users always matches the latest master templates without needing `python3 app.py` running.
 
+### How to test GNOME Shell Extension files and installer:
+```bash
+# Validate JSON manifest
+python3 -m json.tool gnome-extension/metadata.json > /dev/null
+
+# Validate installer script syntax
+bash -n gnome-extension/install.sh
+
+# Test symlink creation and gnome-extensions enablement
+./gnome-extension/install.sh
+```
+
 ---
 
 ## 🚀 7. Checklist for Future Pull Requests / Agent Tasks
@@ -291,4 +321,5 @@ Before concluding any task on this codebase, verify that:
 2. Nautilus split-view headerbars have zero gap and match the sidebar seamlessly.
 3. Firefox profiles across XDG, legacy, Flatpak, and Snap are discovered and themed.
 4. Python files pass `py_compile` without warnings or syntax errors.
-5. `README.md` and `AGENTS.md` reflect any new capabilities added.
+5. GNOME Shell Quick Settings extension (`gnome-extension/`) maintains ESM syntax, valid `metadata.json`, and non-blocking async execution.
+6. `README.md` and `AGENTS.md` reflect any new capabilities added.

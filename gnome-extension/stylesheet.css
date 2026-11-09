@@ -1,0 +1,11 @@
+/* GNOME Theme Studio - Quick Settings Extension Stylesheet */
+
+.theme-studio-scroll-section {
+    max-height: 280px;
+    padding-right: 2px;
+}
+
+.theme-studio-preset-item {
+    font-size: 13px;
+    padding: 6px 10px;
+}

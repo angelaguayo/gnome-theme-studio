@@ -1,0 +1,15 @@
+{
+  "name": "GNOME Theme Studio",
+  "description": "Selector y aplicador en tiempo real de temas y presets de GNOME Theme Studio directamente desde el Quick Settings.",
+  "uuid": "theme-studio@angelaguayo.github.io",
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51"
+  ],
+  "url": "https://github.com/angelaguayo/gnome-theme-studio"
+}
